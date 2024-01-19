@@ -1,6 +1,7 @@
 import sys
 import time
 from threading import Thread
+from queue import Queue
 #import RPi.GPIO as GPIO -- une librarie seulement installable sur le raspberryPi
 #import moteur
 #import interface
@@ -16,6 +17,8 @@ lsAxisZ  = 3
 
 #------------Variables------------
 mainInit = True
+queueFromInterface = Queue()
+queueFromProcess   = Queue()
 
 #------------Set Inputs & Outputs------------
 GPIO.setmode(GPIO.BCM)
@@ -28,21 +31,26 @@ GPIO.setup(lsAxisYY,GPIO.IN)
 GPIO.setup(lsAxisZ,GPIO.IN)
 
 #-----------Fonctions------------------------
-def process(moteur.main()):
+def process(queueFromInterface, queueFromProcess):
+
     return
 
-def interface(interface.main()):
+def interface(queueFromInterface, queueFromProcess):
     return
 
+#-----------Creation de thread----------------
+processThread = Thread(target=process, arg=(queueFromInterface, queueFromProcess))
+interfaceThread = Thread(target=interface, arg=(queueFromInterface, queueFromProcess))
 
-#------------Boucle principale------------
+#------------Boucle principale----------
 while mainInit:
 
-    processThread = Thread(target=process)
-    interfaceThread = Thread(target=interface)
 
     processThread.start()
     interfaceThread.start()
+
+    processThread.join()
+    interfaceThread.join()
     
 
 
