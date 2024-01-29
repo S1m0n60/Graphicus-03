@@ -1,7 +1,5 @@
-# Add distance control for stepper motor
-# Check for infinite movement in go_to_home function
-
 from msvcrt import getch
+from queue import Queue
 from dynamixel_sdk import * 
 import RPi.GPIO as GPIO
 from time import *
@@ -88,6 +86,14 @@ class Moteurs:
         else:
             print(f"Motor {motor_id} moved successfully to position {target_position}")
 
+    def move_dynamixel_angle(self, motor_id, angle_value):
+        current_position = self.read_motor_state(motor_id)
+        new_position = current_position + angle_value
+
+        if new_position > self.DXL_MAXIMUM_POSITION_VALUE:
+            new_position = self.DXL_MINIMUM_POSITION_VALUE + (new_position - self.DXL_MAXIMUM_POSITION_VALUE)
+
+        self.move_to_position(motor_id, new_position)
 
     def read_motor_state(self, motor_id):
         # Fonction pour lire les valeurs renvoyes par le moteur Dynamixel
@@ -156,6 +162,19 @@ class Moteurs:
         else:
             return ()
         
+    def move_stepper_to_distance(self, motor_id, distance, speed, kg):
+        # Specs
+        step_angle = 1.8
+        steps_per_revolution = 200
+
+        # Distance par revolution
+        pitch = 360 / (step_angle * steps_per_revolution * kg)
+
+        # NB de pas pour distance voulue
+        steps = int(distance / pitch)
+
+        self.move_stepper_motor_forward(motor_id, steps, speed)
+        
 
     def laser_go_to_home(self):
         motor_id = 1 
@@ -191,7 +210,48 @@ class Moteurs:
             self.disable_stepper_motor(motor_id)
 
         print("Stepper Motors 2 and 3 moved together.")
-
     
+    def read_stepper_position(self):
+        return self.read_motor_state(1)
 
+    def read_dynamixel_position(self, motor_id):
+        return self.read_motor_state(motor_id)
     
+    def gravure(self, total_length, glass_length, grav_length, dynamixel_angle_interval, num_round_trips, speed):
+      
+        stepper_positions_queue = Queue()
+        dynamixel_positions_queue = Queue()
+
+        point_a = total_length - glass_length
+        point_b = total_length
+
+        for _ in range(num_round_trips):
+            self.move_stepper_to_distance(1, point_b, speed, kg = 1)
+
+            stepper_positions_queue.put(self.read_stepper_position())
+            dynamixel_positions_queue.put(self.read_dynamixel_position(1))
+
+            # On a besoin d'un sleep?
+            sleep(1)
+
+            dynamixel_target_angle = self.read_dynamixel_position(1) + dynamixel_angle_interval
+            self.move_dynamixel_angle(1, dynamixel_target_angle)
+
+            # On a besoin d'un sleep?
+            sleep(1)
+
+            self.move_stepper_to_distance(1, point_a, speed=10, lead=2)
+
+            stepper_positions_queue.put(self.read_stepper_position())
+            dynamixel_positions_queue.put(self.read_dynamixel_position(1))
+           
+            # On a besoin d'un sleep?
+            sleep(1)
+
+            dynamixel_target_angle = self.read_dynamixel_position(1) + dynamixel_angle_interval
+            self.move_dynamixel_angle(1, dynamixel_target_angle)
+
+            # On a besoin d'un sleep?
+            sleep(1)
+
+        return stepper_positions_queue, dynamixel_positions_queue
