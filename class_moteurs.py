@@ -1,3 +1,6 @@
+# Add distance control for stepper motor
+# Check for infinite movement in go_to_home function
+
 from msvcrt import getch
 from dynamixel_sdk import * 
 import RPi.GPIO as GPIO
