@@ -1,7 +1,7 @@
 if __name__ == "__main__":  
     from PIL import Image
 
-    with open(r"C:\Users\Francois\Documents\1_UdeS\S4\Projet\interface\ouput_test.txt", 'r') as f:
+    with open(r"ouput_test.txt", 'r') as f:
         raw_data = f.read()
     lines = raw_data.split("\n")
 

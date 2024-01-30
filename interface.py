@@ -14,9 +14,10 @@ from svgpath2mpl import parse_path
 from math import sqrt
 
 
-
 class MainWindow(Ui_Graphicus03, QMainWindow):
     def __init__(self):
+        """Initilise l'interface
+        """
         super(MainWindow, self).__init__()
         self.setupUi(self)
         self.scene = QGraphicsScene(0, 0, 200, 140)
@@ -27,22 +28,32 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
         self.polygonItems = []
 
     def setupConnection(self):
+        """Connecte les évènements de l'interface à leur fonction dédiée
+        """
         self.PB_selectFile.pressed.connect(self.fileSelection)
         self.PB_launch.pressed.connect(self.startExecution)
 
     def modifySetup(self):
+        """Modifie le setup fait par QtDesing
+        """
         self.GV_logo.setScene(self.scene)
         self.CB_material.addItems(["Plastic", "Glass", "Metal"])
         self.CB_unit.addItems(["cm", "mm", "inch"])
 
     def fileSelection(self):  
+        """Ouvre l'exploreur de fichier pour selectionner un SVG
+        """
         tkinter.Tk().withdraw()
-        self.selected_file = filedialog.askopenfile(filetypes=[("vector files", ["*.csv", "*.svg"]), ("all files", "*")])
+        selected_file_temp = filedialog.askopenfile(filetypes=[("vector files", ["*.svg"]), ("all files", "*")])
+        if selected_file_temp != None:
+            self.selected_file = selected_file_temp
         print(self.selected_file.name)
         self.LE_csvFile.setText(self.selected_file.name)
         self.modifyImageViewer()
 
     def modifyImageViewer(self):
+        """Modifie l'image du logo sur le graphique view avec l'image provenant du fichier SVG
+        """
         self.scene.clear()
         # get the svg information from file
         doc = minidom.parse(self.selected_file.name)
@@ -69,6 +80,7 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
             new_item.setPolygon(new_polygon)
             self.polygonItems.append(new_item)
             self.scene.addItem(new_item)
+            # calcul de combien il faut décaller les items pour les ramener à l'origine (0, 0)
             distance = self.get_distance_from_origine(new_item)
             if closest_point == []:
                 closest_point = distance
@@ -84,17 +96,28 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
                     fartest_point[3] = distance[3]
                 if fartest_point[4] < distance[4]:
                     fartest_point[4] = distance[4]
+        # déplace tous les items vers l'origine avec le décalage calculé précédement
         for item_ in self.polygonItems:
             item_.setPos(item_.pos() - QPointF(closest_point[1], closest_point[2])) 
         self.scene.setSceneRect(0, 0, fartest_point[3]-closest_point[1], fartest_point[4]-closest_point[2])
         print("fini")
     
     def get_distance_from_origine(self, graphic_item: QGraphicsPolygonItem):
+        """Retourne la distance entre le entre l'origine (0, 0) et la position d'un QGraphicsItem
+
+        Args:
+            graphic_item (QGraphicsPolygonItem): Un item du QGraphicView
+
+        Returns:
+            [float, int, int, int, int] : [distance entre (0, 0) et origine du rectangle, x_origine item, y_origine item, x_final item, y_final item]
+        """
         b_rect = graphic_item.boundingRect()
         distance = sqrt(b_rect.x()**2 + b_rect.y()**2)
         return [distance, b_rect.x(), b_rect.y(), b_rect.x()+b_rect.width(), b_rect.y()+b_rect.height()]
 
     def startExecution(self):
+        """lance le signal dans la Queue pour débuter la gravure et initilise la reception des positions pour graver
+        """
         self.PB_launch.setDisabled(True)
         cb_unit_index = self.CB_unit.currentIndex()
         cb_material_index = self.CB_material.currentIndex()
@@ -125,15 +148,13 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
                         collision += 1
                 result += str(collision % 2 ) + " "  
                 #for smoother result 
-                # result += str(collision % 2 * last_collision % 2) + " "
+                #result += str(collision % 2 * last_collision % 2) + " "
                 last_collision = collision
             result += "\n"
-        
         with open("ouput_test.txt", 'w') as f:
             f.write(result)
         print("finished")
         self.PB_launch.setEnabled(True)
-
 
 
 if __name__ == "__main__":
