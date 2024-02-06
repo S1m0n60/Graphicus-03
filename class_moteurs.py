@@ -47,6 +47,7 @@ class Moteurs:
         GPIO.setup(self.limit_switch_pins, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
         self.stepper_position = 0
+        self.MAX_STEP_DIFFERENCE = 2
 
     def is_limit_switch_triggered(self, switch_id):
         """Fonction pour vérifier si un des capteurs de fin de course est activé
@@ -269,20 +270,20 @@ class Moteurs:
         else:
             return ()
         
-    def move_stepper_to_distance(self, motor_id, distance, speed, kg):
+    def move_stepper_to_distance(self, motor_id, distance, speed):
         """Fonction permettant de bouger le moteur pas-à-pas selon une distance spécifiée
 
         Args:
             motor_id (int): Identifiant du moteur pas-à-pas (1-3)
-            distance (float): Distance spécifiée en cm 
+            distance (float): Distance spécifiée en mm 
             speed (float): Vitesse du moteur désirée en ???
-            kg (int): Facteur de réduction
         """
         # Specs
         step_angle = 1.8
         steps_per_revolution = 200
 
         # 2mm entre chaque tour pour la vis sans fin
+        kg = 2
 
         # Distance par revolution
         pitch = 360 / (step_angle * steps_per_revolution * kg)
@@ -315,8 +316,8 @@ class Moteurs:
         self.disable_stepper_motor(motor_id)
         print(f"Laser stepper motor at home position.")
 
-    def move_board(self):
-        """Fonction permettant de bouger les moteurs 2 et 3 pas-à-pas en même temps pour faire bouger la plateforme
+    def move_board_up(self):
+        """Fonction permettant de bouger les moteurs 2 et 3 pas-à-pas en même temps pour faire bouger la plateforme vers le haut
         """
         motors = [2, 3]
         limit_switch_id1 = 3
@@ -328,9 +329,49 @@ class Moteurs:
         for motor_id in motors:
             self.enable_stepper_motor(motor_id)
 
+        steps_taken = {motor_id: 0 for motor_id in motors}
+
         while not (self.is_limit_switch_triggered(limit_switch_pin1) or self.is_limit_switch_triggered(limit_switch_pin2)):
             for motor_id in motors:
-                self.move_stepper_motor_forward(motor_id, steps=1, speed=10)
+                steps = self.move_stepper_motor_forward(motor_id, steps=1, speed=10)
+                steps_taken[motor_id] += steps
+
+            if abs(steps_taken[2] - steps_taken[3]) > self.MAX_STEP_DIFFERENCE:
+                ahead_motor = 2 if steps_taken[2] > steps_taken[3] else 3
+                behind_motor = 3 if steps_taken[2] > steps_taken[3] else 2
+                steps_to_wait = abs(steps_taken[ahead_motor] - steps_taken[behind_motor])
+                for _ in range(steps_to_wait):
+                    self.move_stepper_motor_forward(behind_motor, steps=1, speed=10)
+
+        for motor_id in motors:
+            self.disable_stepper_motor(motor_id)
+
+    def move_board_down(self):
+        """Fonction permettant de bouger les moteurs 2 et 3 pas-à-pas en même temps pour faire bouger la plateforme vers le bas
+        """
+        motors = [2, 3]
+        limit_switch_id1 = 3
+        limit_switch_id2 = 4
+
+        limit_switch_pin1 = self.limit_switch_pins[limit_switch_id1 - 1]
+        limit_switch_pin2 = self.limit_switch_pins[limit_switch_id2 - 1]
+
+        for motor_id in motors:
+            self.enable_stepper_motor(motor_id)
+
+        steps_taken = {motor_id: 0 for motor_id in motors}
+
+        while not (self.is_limit_switch_triggered(limit_switch_pin1) or self.is_limit_switch_triggered(limit_switch_pin2)):
+            for motor_id in motors:
+                steps = self.move_stepper_motor_backwards(motor_id, steps=1, speed=10)
+                steps_taken[motor_id] += steps
+
+            if abs(steps_taken[2] - steps_taken[3]) > self.MAX_STEP_DIFFERENCE:
+                ahead_motor = 2 if steps_taken[2] > steps_taken[3] else 3
+                behind_motor = 3 if steps_taken[2] > steps_taken[3] else 2
+                steps_to_wait = abs(steps_taken[ahead_motor] - steps_taken[behind_motor])
+                for _ in range(steps_to_wait):
+                    self.move_stepper_motor_backwards(behind_motor, steps=1, speed=10)
 
         for motor_id in motors:
             self.disable_stepper_motor(motor_id)
@@ -377,6 +418,24 @@ class Moteurs:
 
             dynamixel_target_angle = self.read_motor_state() + dynamixel_angle_interval
             self.move_dynamixel_angle(1, dynamixel_target_angle)
+
+    def read_values(self):
+        """Function pour lire les positions en x et y
+
+        Returns:
+            tuple: Un tuple contenant les positions en x et y
+                x (float): Angle lu par le moteur Dynamixel
+                y (float): Valeur de distance lue par le moteur pas-à-pas
+        """
+        x = self.read_motor_state()
+
+        step_angle = 1.8  
+        steps_per_revolution = 200
+        screw_pitch = 2 
+        steps_per_mm = steps_per_revolution / (360 / step_angle) / screw_pitch
+        y_distance_mm = self.stepper_position / steps_per_mm
+
+        return x, y_distance_mm
 
 
 testmoteur = Moteurs()
