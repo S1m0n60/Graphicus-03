@@ -427,6 +427,8 @@ class Moteurs:
                 x (float): Angle lu par le moteur Dynamixel
                 y (float): Valeur de distance lue par le moteur pas-à-pas
         """
+        values_queue = queue.Queue()
+
         x = self.read_motor_state()
 
         step_angle = 1.8  
@@ -435,7 +437,10 @@ class Moteurs:
         steps_per_mm = steps_per_revolution / (360 / step_angle) / screw_pitch
         y_distance_mm = self.stepper_position / steps_per_mm
 
-        return x, y_distance_mm
+        # Add the values to the local queue
+        values_queue.put((x, y_distance_mm))
+
+        return values_queue
 
 
 testmoteur = Moteurs()
