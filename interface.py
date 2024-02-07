@@ -1,7 +1,7 @@
 # Interface Management
 from Windows.Graphicus03_Main import Ui_Graphicus03
 from PySide6.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QGraphicsRectItem, QGraphicsPolygonItem
-from PySide6.QtCore import QPointF
+from PySide6.QtCore import QPointF, QObject, Signal, QThread
 from PySide6.QtGui import QPolygonF
 from modules import PySide_dark_theme
 # File Management with explorer
@@ -12,10 +12,13 @@ from xml.dom import minidom
 # from svgpathtools import parse_path
 from svgpath2mpl import parse_path
 from math import sqrt
+from queue import Queue
+# test output
+import json
 
 
 class MainWindow(Ui_Graphicus03, QMainWindow):
-    def __init__(self):
+    def __init__(self, queueOut: Queue, queueIn: Queue, is_test = False):
         """Initilise l'interface
         """
         super(MainWindow, self).__init__()
@@ -23,22 +26,29 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
         self.scene = QGraphicsScene(0, 0, 200, 140)
         self.screen_info = None
         self.modifySetup()
-        self.setupConnection()
+        self.setupConnection(is_test)
         self.selected_file = "None"
         self.polygonItems = []
+        self.queueIn = queueIn
+        self.queueOut = queueOut
 
-    def setupConnection(self):
+    def setupConnection(self, is_test):
         """Connecte les évènements de l'interface à leur fonction dédiée
         """
         self.PB_selectFile.pressed.connect(self.fileSelection)
-        self.PB_launch.pressed.connect(self.startExecution)
+        if not is_test:
+            self.PB_launch.pressed.connect(self.startExecution)
+        else:
+            self.PB_launch.pressed.connect(self.startExecution_test_print)
 
     def modifySetup(self):
         """Modifie le setup fait par QtDesing
         """
         self.GV_logo.setScene(self.scene)
         self.CB_material.addItems(["Plastic", "Glass", "Metal"])
-        self.CB_unit.addItems(["cm", "mm", "inch"])
+        for CB_unit in [self.CB_unit_radius, self.CB_unit_Largeur, self.CB_unit_Hauteur]:
+            CB_unit.addItems(["cm", "mm", "inch"])
+        self.progressBar.setValue(0)
 
     def fileSelection(self):  
         """Ouvre l'exploreur de fichier pour selectionner un SVG
@@ -47,9 +57,9 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
         selected_file_temp = filedialog.askopenfile(filetypes=[("vector files", ["*.svg"]), ("all files", "*")])
         if selected_file_temp != None:
             self.selected_file = selected_file_temp
-        print(self.selected_file.name)
-        self.LE_csvFile.setText(self.selected_file.name)
-        self.modifyImageViewer()
+            print(self.selected_file.name)
+            self.LE_csvFile.setText(self.selected_file.name)
+            self.modifyImageViewer()
 
     def modifyImageViewer(self):
         """Modifie l'image du logo sur le graphique view avec l'image provenant du fichier SVG
@@ -118,10 +128,45 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
     def startExecution(self):
         """lance le signal dans la Queue pour débuter la gravure et initilise la reception des positions pour graver
         """
+        self.Laser = QGraphicsRectItem(0.5, 0.5, 0.01, 0.01)
+        self.progressBar.setMaximum(int(self.scene.sceneRect().width()) * int(self.scene.sceneRect().height()))
+        self.scene.addItem(self.Laser)
+
+        print("thread initialise")
+
+        self.thread = QThread()
+        self.worker = worker(self.queueIn, self.get_collisions, self.progress_done)
+        self.worker.moveToThread(self.thread)
+        # connecter les signaux entre le worker et la thread associé
+        self.thread.started.connect(self.worker.run)
+        self.worker.finished.connect(self.thread.quit)
+        self.worker._progress.connect(self.updateProgressbar)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.thread.finished.connect(self.thread.deleteLater)
+        # start the thread
+        self.thread.start()
+
+        width = self.scene.sceneRect().width()
+        height = self.scene.sceneRect().height()
+        self.queueOut.put(f"debut-{int(width)}-{int(height)}")
+
+        print("sortie du while")
+
+    def progress_done(self):
+        self.progressBar.setValue(self.progressBar.maximum())
+
+    def updateProgressbar(self, coods):
+        self.progressBar.setValue(coods[0] * int(self.scene.sceneRect().height()) + coods[1])
+
+    def startExecution_test_print(self):
+        """test la génération de signal pour le laser
+        analyse chaque pixel de l'interface pour générer une image représentant si le laser est allumé ou fermé
+        à combiner avec "from_bin_map_to_image.py"
+        """
         self.PB_launch.setDisabled(True)
-        cb_unit_index = self.CB_unit.currentIndex()
+        cb_unit_index = self.CB_unit_radius.currentIndex()
         cb_material_index = self.CB_material.currentIndex()
-        print(f"startExecution - {self.DSB_radius.value()} {self.CB_unit.itemText(cb_unit_index)} - {self.CB_material.itemText(cb_material_index)}")
+        print(f"startExecution - {self.DSB_radius.value()} {self.CB_unit_radius.itemText(cb_unit_index)} - {self.CB_material.itemText(cb_material_index)}")
 
         Laser = QGraphicsRectItem(0.5, 0.5, 0.01, 0.01)
         self.scene.addItem(Laser)
@@ -134,6 +179,7 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
         print(x0, y0, width, height)
 
         result = ""
+        self.progressBar.setMaximum((int(height) - int(y0)) * (int(width) - int(x0)))
         for y in range(int(y0), int(height)):
             last_collision = 0
             for item in self.polygonItems:
@@ -146,20 +192,65 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
                 for item in self.polygonItems:
                     if Laser.collidesWithItem(item):
                         collision += 1
-                result += str(collision % 2 ) + " "  
-                #for smoother result 
-                #result += str(collision % 2 * last_collision % 2) + " "
+                result += str(collision % 2 ) + " " 
+                self.progressBar.setValue(y*int(width) + x) 
                 last_collision = collision
+
             result += "\n"
         with open("ouput_test.txt", 'w') as f:
             f.write(result)
-        print("finished")
+        self.progressBar.setValue(self.progressBar.maximum())
         self.PB_launch.setEnabled(True)
 
+    def get_collisions(self, x, y) -> bool:
+        self.Laser.setPos(x, y)
+        collision = 0
+        for item in self.polygonItems:
+            if self.Laser.collidesWithItem(item):
+                collision += 1
+        return collision % 2 
+    
+class worker(QObject):
+    finished = Signal()
+    _progress = Signal(tuple)
 
-if __name__ == "__main__":
+    def __init__(self, queueIn:Queue, target_func, end_call_func):
+        super().__init__()
+        self.queueIn = queueIn
+        self.callback = target_func
+        self.end_call_func = end_call_func
+
+    def run(self):
+        print("run")
+        stop = False
+        result_worker = []
+        while not stop:
+            if not self.queueIn.empty():
+                lecture = self.queueIn.get_nowait()
+                if type(lecture) == str:
+                    if lecture == "finis":
+                        self.end_call_func()
+                        stop = True
+                elif type(lecture) == list:
+                    x = lecture[0]
+                    y = lecture[1]
+                    collision = self.callback(x, y)
+                    if collision:
+                        # self.queueIn.mutex.acquire()
+                        result_worker.append(lecture)
+                        # self.queueIn.mutex.release()
+                        self._progress.emit((x, y))
+        with open("ouput_test_worker.json", 'w') as f:
+            json.dump(result_worker, f, indent=4)
+        self.finished.emit()
+
+def initWindow(queueOut, queueIn, is_test = False):
     app = QApplication([])
-    win = MainWindow()
+    win = MainWindow(queueOut, queueIn, is_test)
     win.show()
     PySide_dark_theme.toggleDarkTheme(app, PySide_dark_theme.darkTheme())
     app.exec()
+
+if __name__ == "__main__":
+    # lance le protocole de test de gravure 
+    initWindow(None, None, True)
