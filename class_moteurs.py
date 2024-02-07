@@ -20,30 +20,31 @@ class Moteurs:
         PROTOCOL_VERSION            = 2.0               
         motor_id                    = 10                 # Dynamixel#1 ID : 1, moteur pour rotation verre (axe x)
         BAUDRATE                    = 57600              # Dynamixel default baudrate : 57600
-        DEVICENAME                  = 'com6'             # Check which port is being used on your controller
+        DEVICENAME                  = 'U2D2'             # Check which port is being used on your controller
         TORQUE_ENABLE               = 1                  # Value for enabling the torque
         TORQUE_DISABLE              = 0                  # Value for disabling the torque
         DXL_MINIMUM_POSITION_VALUE  = 100                # Dynamixel will rotate between this value
         DXL_MAXIMUM_POSITION_VALUE  = 4000               # and this value
         DXL_MOVING_STATUS_THRESHOLD = 20
         dxl_goal_position = [DXL_MINIMUM_POSITION_VALUE, DXL_MAXIMUM_POSITION_VALUE]         # Goal position
-        portHandler = PortHandler(DEVICENAME)
-        packetHandler = PacketHandler(PROTOCOL_VERSION)
-        groupSyncWrite = GroupSyncWrite(portHandler, packetHandler, ADDR_PRO_GOAL_POSITION, LEN_PRO_GOAL_POSITION)
-        groupSyncRead = GroupSyncRead(portHandler, packetHandler, ADDR_PRO_PRESENT_POSITION, LEN_PRO_PRESENT_POSITION)
+        #portHandler = PortHandler(DEVICENAME)
+        #packetHandler = PacketHandler(PROTOCOL_VERSION)
+        #groupSyncWrite = GroupSyncWrite(portHandler, packetHandler, ADDR_PRO_GOAL_POSITION, LEN_PRO_GOAL_POSITION)
+        #groupSyncRead = GroupSyncRead(portHandler, packetHandler, ADDR_PRO_PRESENT_POSITION, LEN_PRO_PRESENT_POSITION)
 
         # Init stepper
-        self.enable_pin1, self.coil_A1, self.coil_B1, self.coil_C1, self.coil_D1 = 1, 2, 3, 4, 5
-        self.enable_pin2, self.coil_A2, self.coil_B2, self.coil_C2, self.coil_D2 = 6, 7, 8, 9, 10
+        self.enable_pin1, self.coil_A1, self.coil_B1, self.coil_C1, self.coil_D1 = 1,23,20,22,12
+        self.enable_pin2, self.coil_A2, self.coil_B2, self.coil_C2, self.coil_D2 = 1,23,20,22,12
         self.enable_pin3, self.coil_A3, self.coil_B3, self.coil_C3, self.coil_D3 = 11, 12, 13, 14, 15  # A remplacer avec les vrais PINS -----------------
 
-        GPIO.setmode(GPIO.BOARD)
-        GPIO.setup([self.enable_pin1, self.coil_A1, self.coil_B1, self.coil_C1, self.coil_D1], GPIO.OUT, initial=GPIO.LOW)
-        GPIO.setup([self.enable_pin2, self.coil_A2, self.coil_B2, self.coil_C2, self.coil_D2], GPIO.OUT, initial=GPIO.LOW)
-        GPIO.setup([self.enable_pin3, self.coil_A3, self.coil_B3, self.coil_C3, self.coil_D3], GPIO.OUT, initial=GPIO.LOW)
+        GPIO.setwarnings(False)
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup((self.enable_pin1, self.coil_A1, self.coil_B1, self.coil_C1, self.coil_D1), GPIO.OUT, initial=GPIO.LOW)
+        GPIO.setup((self.enable_pin2, self.coil_A2, self.coil_B2, self.coil_C2, self.coil_D2), GPIO.OUT, initial=GPIO.LOW)
+        GPIO.setup((self.enable_pin3, self.coil_A3, self.coil_B3, self.coil_C3, self.coil_D3), GPIO.OUT, initial=GPIO.LOW)
 
 
-        self.limit_switch_pins = [16, 17, 18, 19]  # A remplacer avec les vrais PINS -----------------
+        self.limit_switch_pins = [24,25,5,6]  
         GPIO.setup(self.limit_switch_pins, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
         self.stepper_position = 0
@@ -59,31 +60,31 @@ class Moteurs:
             int: 0 - Capteur de fin de course non-actif
                  1 - capteur de fin de course actif
         """
-        return not GPIO.input(self.limit_switch_pins[switch_id-1])
+        return GPIO.input(self.limit_switch_pins[switch_id-1])
 
     def disable_torque(self):
         """Fonction permettant de désactiver le couple du moteur Dynamixel
            Cette fonction peut être utilisé pour arrêter le moteur
         """
         dxl_comm_result, dxl_error = self.packetHandler.write1ByteTxRx(self.portHandler, self.motor_id, self.ADDR_PRO_TORQUE_ENABLE, self.TORQUE_DISABLE)
-        if dxl_comm_result != COMM_SUCCESS:
-            print(f"Communication error while disabling torque, error: {dxl_comm_result}, {self.packetHandler.getTxRxResult(dxl_comm_result)}")
-        elif dxl_error != 0:
-            print(f"Error while disabling torque, error: {dxl_error}")
-        else:
-            print("Torque disabled successfully")
+        #if dxl_comm_result != COMM_SUCCESS:
+            #print(f"Communication error while disabling torque, error: {dxl_comm_result}, {self.packetHandler.getTxRxResult(dxl_comm_result)}")
+        #elif dxl_error != 0:
+         #   print(f"Error while disabling torque, error: {dxl_error}")
+        #else:
+         #   print("Torque disabled successfully")
 
     def enable_torque(self):
         """Fonction permettant d'activer le couple du moteur Dynamixel
            Cette fonction doit être utilisé avant tout autre fonction de mouvement
         """
         dxl_comm_result, dxl_error = self.packetHandler.write1ByteTxRx(self.portHandler, self.DXL1_ID, self.ADDR_PRO_TORQUE_ENABLE, self.TORQUE_ENABLE)
-        if dxl_comm_result != COMM_SUCCESS:
-            print(f"Communication error while enabling torque, error: {dxl_comm_result}, {self.packetHandler.getTxRxResult(dxl_comm_result)}")
-        elif dxl_error != 0:
-            print(f"Error while enabling torque, error: {dxl_error}")
-        else:
-            print("Torque enabled successfully")
+        #if dxl_comm_result != COMM_SUCCESS:
+         #   print(f"Communication error while enabling torque, error: {dxl_comm_result}, {self.packetHandler.getTxRxResult(dxl_comm_result)}")
+        #elif dxl_error != 0:
+         #   print(f"Error while enabling torque, error: {dxl_error}")
+        #else:
+         #   print("Torque enabled successfully")
 
     def set_motor_speed(self, speed):
         """Fonction permettant de faire avancer le moteur Dynamixel selon une vitesse spécifiée
@@ -92,12 +93,12 @@ class Moteurs:
             speed (int): Vitesse désirée du moteur en ???
         """
         dxl_comm_result, dxl_error = self.packetHandler.write2ByteTxRx(self.portHandler, self.motor_id, self.ADDR_PRO_GOAL_POSITION, speed)
-        if dxl_comm_result != COMM_SUCCESS:
-            print(f"Communication error while setting speed, error: {dxl_comm_result}, {self.packetHandler.getTxRxResult(dxl_comm_result)}")
-        elif dxl_error != 0:
-            print(f"Error while setting speed, error: {dxl_error}")
-        else:
-            print(f"Speed of motor {self.motor_id} set successfully to {speed}")
+        #if dxl_comm_result != COMM_SUCCESS:
+         #   print(f"Communication error while setting speed, error: {dxl_comm_result}, {self.packetHandler.getTxRxResult(dxl_comm_result)}")
+        #elif dxl_error != 0:
+         #   print(f"Error while setting speed, error: {dxl_error}")
+        #else:
+         #   print(f"Speed of motor {self.motor_id} set successfully to {speed}")
 
     def move_to_position(self,target_position):
         """Fonction permettant de faire avancer le moteur Dynamixel selon une position désirée
@@ -106,12 +107,12 @@ class Moteurs:
             target_position (float): Position désirée du moteur en ???
         """
         dxl_comm_result, dxl_error = self.packetHandler.write4ByteTxRx(self.portHandler, self.motor_id, self.ADDR_PRO_GOAL_POSITION, target_position)
-        if dxl_comm_result != COMM_SUCCESS:
-            print(f"Communication error during movement, error: {dxl_comm_result}, {self.packetHandler.getTxRxResult(dxl_comm_result)}")
-        elif dxl_error != 0:
-            print(f"Error during movement, error: {dxl_error}")
-        else:
-            print(f"Motor {self.motor_id} moved successfully to position {target_position}")
+        #if dxl_comm_result != COMM_SUCCESS:
+         #   print(f"Communication error during movement, error: {dxl_comm_result}, {self.packetHandler.getTxRxResult(dxl_comm_result)}")
+        #elif dxl_error != 0:
+         #   print(f"Error during movement, error: {dxl_error}")
+        #else:
+         #   print(f"Motor {self.motor_id} moved successfully to position {target_position}")
 
     def move_dynamixel_angle(self, angle_value):
         """Fonction permettant de faire tourner le moteur Dynamixel selon une valeur d'angle désirée
@@ -203,7 +204,7 @@ class Moteurs:
             speed (float): Vitesse du moteur désirée en ???
         """
         if motor_id == 1:
-            coil_sequence = [(1, 1, 0, 0), (0, 1, 1, 0), (0, 0, 1, 1), (1, 0, 0, 1)]
+            coil_sequence = [(1, 0, 1, 0), (0, 1, 1, 0), (0, 1, 0, 1), (1, 0, 0, 1)]
         elif motor_id == 2:
             coil_sequence = [(1, 1, 0, 0), (0, 1, 1, 0), (0, 0, 1, 1), (1, 0, 0, 1)]
         elif motor_id == 3:
@@ -218,6 +219,7 @@ class Moteurs:
             for coils in coil_sequence:
                 for coil_pin, coil_state in zip(self.get_coil_pins(motor_id), coils):
                     GPIO.output(coil_pin, GPIO.HIGH if coil_state else GPIO.LOW)
+                    print("MOTOR MOVING")
                 sleep(delay)
 
             self.stepper_position += 1
@@ -231,7 +233,7 @@ class Moteurs:
             speed (float): Vitesse du moteur désirée en ???
         """
         if motor_id == 1:
-            coil_sequence = [(1, 0, 0, 1), (0, 0, 1, 1), (0, 1, 1, 0), (1, 1, 0, 0)]
+            coil_sequence = [(1, 0, 0, 1), (0, 1,0,1), (0, 1, 1, 0), (1, 0, 1, 0)]
         elif motor_id == 2:
             coil_sequence = [(1, 0, 0, 1), (0, 0, 1, 1), (0, 1, 1, 0), (1, 1, 0, 0)]
         elif motor_id == 3:
@@ -427,7 +429,7 @@ class Moteurs:
                 x (float): Angle lu par le moteur Dynamixel
                 y (float): Valeur de distance lue par le moteur pas-à-pas
         """
-        values_queue = queue.Queue()
+        #values_queue = queue.Queue()
 
         x = self.read_motor_state()
 
@@ -438,24 +440,27 @@ class Moteurs:
         y_distance_mm = self.stepper_position / steps_per_mm
 
         # Add the values to the local queue
-        values_queue.put((x, y_distance_mm))
+        #values_queue.put((x, y_distance_mm))
 
-        return values_queue
+        return x #values_queue
 
 
 testmoteur = Moteurs()
 testmoteur.enable_stepper_motor(1)
-testmoteur.enable_stepper_motor(4)
-testmoteur.move_stepper_motor_forward(4,1,10)
-testmoteur.move_stepper_motor_forward(1,1,10)
-testmoteur.move_stepper_motor_backwards(1,1,10)
-print(testmoteur.is_limit_switch_triggered(2))
-testmoteur.set_motor_speed(10)
-testmoteur.read_motor_state()
-testmoteur.read_stepper_position()
-testmoteur.enable_torque()
-testmoteur.move_dynamixel_angle(12)
-testmoteur.move_to_position(30)
-testmoteur.disable_stepper_motor(1)
-testmoteur.disable_stepper_motor(4)
+#testmoteur.enable_stepper_motor(4)
+#testmoteur.move_stepper_motor_forward(4,1,10)
+#testmoteur.move_stepper_motor_forward(1,1000,650)
+#testmoteur.move_stepper_motor_backwards(1,1000,650)
+#print(testmoteur.is_limit_switch_triggered(2))
+#testmoteur.set_motor_speed(10)
+#testmoteur.read_motor_state()
+#testmoteur.read_stepper_position()
+#testmoteur.enable_torque()
+#testmoteur.move_dynamixel_angle(12)
+#testmoteur.move_to_position(30)
+#testmoteur.disable_stepper_motor(1)
+#testmoteur.disable_stepper_motor(4)
+testmoteur.move_stepper_to_distance(1,30,600)
+#while True:
+ #   print(testmoteur.is_limit_switch_triggered(2))
 
