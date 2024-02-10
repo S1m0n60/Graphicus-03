@@ -81,20 +81,27 @@ class Moteurs:
             steps (int): Nombre de pas désiré
             speed (float): Vitesse du moteur désirée (0-1000)
         """
-        if motor_id == 1 or 2 or 3:
-            coil_sequence = [(1, 0, 1, 0), (0, 1, 1, 0), (0, 1, 0, 1), (1, 0, 0, 1)]
+        if motor_id == 1:
+            limit_switch_pin1 = 1
+            limit_switch_pin2 = 2
+        elif motor_id == 2:
+            limit_switch_pin1 = 3
+            limit_switch_pin2 = 4
         else:
             print(f"Invalid motor_id: {motor_id}")
             return
-
+        
+        coil_sequence = [(1, 0, 1, 0), (0, 1, 1, 0), (0, 1, 0, 1), (1, 0, 0, 1)]
         delay = 1.0 / speed
 
         for _ in range(steps):
             for coils in coil_sequence:
                 for coil_pin, coil_state in zip(self.get_coil_pins(motor_id), coils):
                     GPIO.output(coil_pin, GPIO.HIGH if coil_state else GPIO.LOW)
-                    print("MOTOR MOVING!")
                 sleep(delay)
+                if self.is_limit_switch_triggered(limit_switch_pin1) == 1 or self.is_limit_switch_triggered(limit_switch_pin2) == 1:
+                    print("Limit switch triggered. Stopping motor.")
+                    return
 
             self.stepper_position += 1
 
@@ -106,20 +113,27 @@ class Moteurs:
             steps (int): Nombre de pas désiré
             speed (float): Vitesse du moteur désirée (0-1000)
         """
-        if motor_id == 1 or 2 or 3:
-            coil_sequence = [(1, 0, 0, 1), (0, 1,0,1), (0, 1, 1, 0), (1, 0, 1, 0)]
+        if motor_id == 1:
+            limit_switch_pin1 = 1
+            limit_switch_pin2 = 2
+        elif motor_id == 2:
+            limit_switch_pin1 = 3
+            limit_switch_pin2 = 4
         else:
             print(f"Invalid motor_id: {motor_id}")
             return
-
+        
+        coil_sequence = [(1, 0, 0, 1), (0, 1, 0, 1), (0, 1, 1, 0), (1, 0, 1, 0)]
         delay = 1.0 / speed
 
         for _ in range(steps):
             for coils in coil_sequence:
                 for coil_pin, coil_state in zip(self.get_coil_pins(motor_id), coils):
                     GPIO.output(coil_pin, GPIO.HIGH if coil_state else GPIO.LOW)
-                    print("MOTOR MOVING!")
                 sleep(delay)
+                if self.is_limit_switch_triggered(limit_switch_pin1) == 1 or self.is_limit_switch_triggered(limit_switch_pin2) == 1:
+                    print("Limit switch triggered. Stopping motor.")
+                    return
 
             self.stepper_position -= 1
 
@@ -142,7 +156,7 @@ class Moteurs:
         else:
             return ()
         
-    def move_stepper_to_distance(self, motor_id, distance:float, speed):
+    def move_stepper_to_distance(self, motor_id, distance_cm:float, speed):
         """Fonction permettant de bouger le moteur pas-à-pas selon une distance spécifiée
 
         Args:
@@ -155,15 +169,18 @@ class Moteurs:
         steps_per_revolution = 200
 
         # Facteur de reduction
-        kg = 0.0157
+        #kg = 8.55
 
         # Distance par revolution
-        pitch = 360 / (step_angle * steps_per_revolution * kg)
+        pitch = 360 / (step_angle * steps_per_revolution)
+
+        distance_mm = distance_cm*100
 
         # NB de pas pour distance voulue
-        steps = int(distance / pitch)
+        steps = int(distance_mm / pitch)
+        print(steps)
 
-        if distance <= 0 :
+        if distance_mm <= 0 :
             self.move_stepper_motor_backwards(motor_id, -steps, speed)
         else:
             self.move_stepper_motor_forward(motor_id, steps, speed)
@@ -175,14 +192,8 @@ class Moteurs:
         """
         motor_id = 1 
         self.enable_stepper_motor(motor_id)
-        
-        limit_switch_id = motor_id
-        limit_switch_id2 = motor_id + 1
-        limit_switch_pin = self.limit_switch_pins[limit_switch_id - 1]
-        limit_switch_pin2 = self.limit_switch_pins[limit_switch_id2 - 1]
-        
-        while (self.is_limit_switch_triggered(limit_switch_pin) == 0 or self.is_limit_switch_triggered(limit_switch_pin2) == 0):
-            self.move_stepper_motor_forward(motor_id, steps=1, speed=10)
+           
+        self.move_stepper_motor_forward(motor_id, steps=1000, speed=600)
 
         self.stepper_position = 0
         self.disable_stepper_motor(motor_id)
@@ -191,18 +202,10 @@ class Moteurs:
     def move_board_up(self):
         """Fonction permettant de bouger les moteurs 2 et 3 pas-à-pas en même temps pour faire bouger la plateforme vers le haut
         """
-        limit_switch_id1 = 3
-        limit_switch_id2 = 4
-
-        limit_switch_pin1 = self.limit_switch_pins[limit_switch_id1 - 1]
-        limit_switch_pin2 = self.limit_switch_pins[limit_switch_id2 - 1]
-
         motor_id = 2
         self.enable_stepper_motor(motor_id)
 
-
-        while (self.is_limit_switch_triggered(limit_switch_pin1) == 0 or self.is_limit_switch_triggered(limit_switch_pin2) == 0):
-            self.move_stepper_motor_forward(motor_id, steps=1, speed=10)
+        self.move_stepper_motor_forward(motor_id, steps=10000, speed=600)
 
         self.disable_stepper_motor(motor_id)
 
@@ -247,7 +250,6 @@ class Moteurs:
         # Position du moteur 1 pour débuter la gravure
         self.move_stepper_to_distance(motor_id=1, distance=position_initiale, speed=600)
 
-        # Boucle de gravure
         while not marque_fin_gravure:
             # Aller
             self.move_stepper_to_distance(motor_id=1, distance=longueur_verre, speed=600)
@@ -265,29 +267,27 @@ class Moteurs:
             int: Nombre de pas effectué
         """
         stepper_position_queue = Queue()
-        print(stepper_position_queue)
         return stepper_position_queue.put(self.stepper_position)
 
 
 testmoteur = Moteurs()
-testmoteur.enable_stepper_motor(1)
+#testmoteur.enable_stepper_motor(1)
 #testmoteur.enable_stepper_motor(4)
 #testmoteur.move_stepper_motor_forward(4,1,10)
-#testmoteur.move_stepper_motor_forward(1,1000,650)
-#testmoteur.move_stepper_motor_backwards(1,1000,650)
+testmoteur.move_stepper_motor_backwards(1,1000,750)
+testmoteur.move_stepper_motor_forward(1,1000,750)
 #print(testmoteur.is_limit_switch_triggered(2))
 #testmoteur.set_motor_speed(10)
 #testmoteur.read_motor_state()
 #testmoteur.read_stepper_position()
 #testmoteur.enable_torque()
-#testmoteur.move_dynamixel_angle(12)
-#testmoteur.move_to_position(30)
 #testmoteur.disable_stepper_motor(1)
 #testmoteur.disable_stepper_motor(4)
-#testmoteur.move_stepper_to_distance(1,500,800)
+#testmoteur.move_stepper_to_distance(1,10,600)
 #testmoteur.move_stepper_motor_backwards(1,1000,100)
 #while True:
- #   print(testmoteur.is_limit_switch_triggered(2))
- #    testmoteur.read_stepper_position()
+    #print(testmoteur.is_limit_switch_triggered(2))
+     #testmoteur.read_stepper_position()
 #testmoteur.set_motor_speed(15)
 #testmoteur.move_board_up()
+#testmoteur.laser_go_to_home()
