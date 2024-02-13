@@ -81,6 +81,8 @@ class Moteurs:
             steps (int): Nombre de pas désiré
             speed (float): Vitesse du moteur désirée (0-1000)
         """
+        self.stepper_position_queue.put((motor_id, steps))
+
         if motor_id == 1:
             limit_switch_pin1 = 1
             limit_switch_pin2 = 2
@@ -113,6 +115,7 @@ class Moteurs:
             steps (int): Nombre de pas désiré
             speed (float): Vitesse du moteur désirée (0-1000)
         """
+        self.stepper_position_queue.put((motor_id, -steps))
         if motor_id == 1:
             limit_switch_pin1 = 1
             limit_switch_pin2 = 2
@@ -155,37 +158,27 @@ class Moteurs:
             return (self.coil_A3, self.coil_B3, self.coil_C3, self.coil_D3)
         else:
             return ()
-        
-    def move_stepper_to_distance(self, motor_id, distance_cm:float, speed):
-        """Fonction permettant de bouger le moteur pas-à-pas selon une distance spécifiée
+
+    def move_stepper_to_distance(self, motor_id, distance, speed):
+        """Déplacer le moteur pas-à-pas à une distance spécifiée en millimètres.
 
         Args:
-            motor_id (int): Identifiant du moteur pas-à-pas (1-3)
-            distance (float): Distance spécifiée en mm 
-            speed (float): Vitesse du moteur désirée (0-1000)
+            motor_id (int): Identifiant du moteur pas-à-pas (1-3).
+            distance (float): Distance à parcourir en millimètres.
+            speed (float): Vitesse désirée du moteur (0-1000).
         """
-        # Specs
-        step_angle = 1.8
-        steps_per_revolution = 200
+        # Constantes
+        degres_par_pas = 1.8  # Degrés par pas du moteur
+        pas_par_mm = 1 / 2  # Pas par millimètre de la vis sans fin
 
-        # Facteur de reduction
-        #kg = 8.55
+        # Calculer le nombre de pas requis
+        pas = int(distance * pas_par_mm * (360 / degres_par_pas))
 
-        # Distance par revolution
-        pitch = 360 / (step_angle * steps_per_revolution)
+        if distance > 0:
+            self.move_stepper_motor_forward(motor_id, pas, speed)
+        elif distance < 0:
+            self.move_stepper_motor_backwards(motor_id, abs(pas), speed)
 
-        distance_mm = distance_cm*100
-
-        # NB de pas pour distance voulue
-        steps = int(distance_mm / pitch)
-        print(steps)
-
-        if distance_mm <= 0 :
-            self.move_stepper_motor_backwards(motor_id, -steps, speed)
-        else:
-            self.move_stepper_motor_forward(motor_id, steps, speed)
-
-        
 
     def laser_go_to_home(self):
         """Fonction permettant le déplacement du moteur pas-à-pas jusqu'à l'activation d'un des 2 capteurs de fin de course
@@ -253,29 +246,42 @@ class Moteurs:
         while not marque_fin_gravure:
             # Aller
             self.move_stepper_to_distance(motor_id=1, distance=longueur_verre, speed=600)
+            self.stepper_position_queue.put((1, longueur_verre))
             # Retour
             self.move_stepper_to_distance(motor_id=1, distance=-longueur_verre, speed=600)
+            self.stepper_position_queue.put((1, -longueur_verre))
             # Rotation moteur 3
             self.move_stepper_motor_forward(motor_id=3, steps=int(angle_rotation_intermediaire), speed=600)
+            self.angle_position_queue.put(angle_rotation_intermediaire)
 
         print("Gravure terminée.")
        
     def read_stepper_position(self):
-        """Fonction permettant de retourner le nombre de pas effectué par le moteur pas-à-pas
+        """Fonction permettant de retourner les valeurs de positions parcourues en temps réel par le moteur 2 et la position d'angle du moteur 3.
 
         Returns:
-            int: Nombre de pas effectué
+            tuple: (Position moteur 2, Position d'angle moteur 3)
         """
-        stepper_position_queue = Queue()
-        return stepper_position_queue.put(self.stepper_position)
+        stepper_position = 0
+        angle_position = 0
+
+        # Parcourir les éléments de la file d'attente pour obtenir les positions en temps réel
+        while not self.stepper_position_queue.empty():
+            motor_id, steps = self.stepper_position_queue.get()
+            if motor_id == 2:
+                stepper_position += steps
+        while not self.angle_position_queue.empty():
+            angle_position = self.angle_position_queue.get()
+
+        return stepper_position, angle_position
 
 
 testmoteur = Moteurs()
 #testmoteur.enable_stepper_motor(1)
 #testmoteur.enable_stepper_motor(4)
 #testmoteur.move_stepper_motor_forward(4,1,10)
-testmoteur.move_stepper_motor_backwards(1,1000,750)
-testmoteur.move_stepper_motor_forward(1,1000,750)
+#testmoteur.move_stepper_motor_backwards(1,1000,750)
+#testmoteur.move_stepper_motor_forward(1,1000,750)
 #print(testmoteur.is_limit_switch_triggered(2))
 #testmoteur.set_motor_speed(10)
 #testmoteur.read_motor_state()
