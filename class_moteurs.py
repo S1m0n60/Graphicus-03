@@ -1,6 +1,6 @@
 from queue import Queue
 import RPi.GPIO as GPIO
-from time import *
+import time
 
 class Moteurs:
     def __init__(self):
@@ -80,8 +80,10 @@ class Moteurs:
             steps (int): Nombre de pas désiré
             speed (float): Vitesse du moteur désirée (0-1000)
         """
-        
         self.stepper_position_queue.put((motor_id, steps))
+
+        if speed > 525:
+            speed = 525
 
         if motor_id == 1:
             limit_switch_pin1 = 1
@@ -89,20 +91,25 @@ class Moteurs:
         elif motor_id == 2:
             limit_switch_pin1 = 3
             limit_switch_pin2 = 4
-            return
         
         coil_sequence = [(1, 0, 1, 0), (0, 1, 1, 0), (0, 1, 0, 1), (1, 0, 0, 1)]
         delay = 1.0 / speed
+        step_count = 0
+        start_time = time.time()
 
-        for _ in range(steps):
-            for coils in coil_sequence:
+        while step_count < steps:    
+            elapsed_time = time.time() - start_time
+            if elapsed_time >= delay:
+                coils = coil_sequence[step_count%4]
                 for coil_pin, coil_state in zip(self.get_coil_pins(motor_id), coils):
                     GPIO.output(coil_pin, GPIO.HIGH if coil_state else GPIO.LOW)
-                sleep(delay)
-                if self.is_limit_switch_triggered(limit_switch_pin1) == 1 or self.is_limit_switch_triggered(limit_switch_pin2) == 1:
-                    return
+                start_time = time.time() 
+                step_count += 1 
 
-            self.stepper_position += 1
+            if self.is_limit_switch_triggered(limit_switch_pin1) == 1 or self.is_limit_switch_triggered(limit_switch_pin2) == 1:
+                return
+
+        self.stepper_position += 1
 
     def move_stepper_motor_backwards(self, motor_id, steps, speed):
         """Fonction permettant de faire reculer un moteur pas-à-pas selon une vitesse et un nombre de pas spécifié
@@ -112,7 +119,9 @@ class Moteurs:
             steps (int): Nombre de pas désiré
             speed (float): Vitesse du moteur désirée (0-1000)
         """
-       
+        if speed > 525:
+            speed = 525
+            
         self.stepper_position_queue.put((motor_id, -steps))
         if motor_id == 1:
             limit_switch_pin1 = 1
@@ -120,20 +129,25 @@ class Moteurs:
         elif motor_id == 2:
             limit_switch_pin1 = 3
             limit_switch_pin2 = 4
-            return
         
         coil_sequence = [(1, 0, 0, 1), (0, 1, 0, 1), (0, 1, 1, 0), (1, 0, 1, 0)]
-        delay = 1.0 / speed
+        delay_ = 1.0 / speed
+        start_time = time.time()
+        step_count = 0
 
-        for _ in range(steps):
-            for coils in coil_sequence:
+        while step_count < steps:  
+            elapsed_time = time.time() - start_time
+            if elapsed_time >= delay_:
+                coils = coil_sequence[step_count%4]
                 for coil_pin, coil_state in zip(self.get_coil_pins(motor_id), coils):
                     GPIO.output(coil_pin, GPIO.HIGH if coil_state else GPIO.LOW)
-                sleep(delay)
-                if self.is_limit_switch_triggered(limit_switch_pin1) == 1 or self.is_limit_switch_triggered(limit_switch_pin2) == 1:
-                    return
+                start_time = time.time() 
+                step_count += 1 
 
-            self.stepper_position -= 1
+            if self.is_limit_switch_triggered(limit_switch_pin1) == 1 or self.is_limit_switch_triggered(limit_switch_pin2) == 1:
+                return
+
+        self.stepper_position -= 1
 
     def get_coil_pins(self, motor_id):
         """Fonction utilisée dans les fonctions move_stepper_motor_forward et move_stepper_motor_backwards pour retourner les 
@@ -164,18 +178,16 @@ class Moteurs:
         """
         # Constantes
         degres_par_pas = 1.8  # Degrés par pas du moteur
-        pas_par_mm = 0.5  # Pas par millimètre de la vis sans fin
+        pas_par_mm = 0.125  # Pas par millimètre de la vis sans fin
 
         # Calculer le nombre de pas requis
-        pas = (distance * pas_par_mm * (360 / degres_par_pas))/4
+        pas = distance * pas_par_mm * (360 / degres_par_pas)
         pas_int = int(pas)
-        #print(pas_int)
 
         if distance > 0:
             self.move_stepper_motor_forward(motor_id, pas_int, speed)
         elif distance < 0:
             self.move_stepper_motor_backwards(motor_id, abs(pas_int), speed)
-
 
     def laser_go_to_home(self):
         """Fonction permettant le déplacement du moteur pas-à-pas jusqu'à l'activation d'un des 2 capteurs de fin de course
@@ -273,11 +285,11 @@ class Moteurs:
 
 
 testmoteur = Moteurs()
-testmoteur.enable_stepper_motor(1)
+#testmoteur.enable_stepper_motor(1)
 #testmoteur.enable_stepper_motor(4)
 #testmoteur.move_stepper_motor_forward(4,1,10)
-#testmoteur.move_stepper_motor_backwards(1,700,750)
-#testmoteur.move_stepper_motor_forward(1,1000,750)
+#testmoteur.move_stepper_motor_backwards(1,800,200)
+#testmoteur.move_stepper_motor_forward(1,200,200)
 #print(testmoteur.is_limit_switch_triggered(2))
 #testmoteur.set_motor_speed(10)
 #testmoteur.read_motor_state()
@@ -285,7 +297,7 @@ testmoteur.enable_stepper_motor(1)
 #testmoteur.enable_torque()
 #testmoteur.disable_stepper_motor(1)
 #testmoteur.disable_stepper_motor(4)
-testmoteur.move_stepper_to_distance(1,-20,600)
+#testmoteur.move_stepper_to_distance(1,-50,525)
 #testmoteur.move_stepper_motor_backwards(1,1000,100)
 #while True:
     #print(testmoteur.is_limit_switch_triggered(2))
