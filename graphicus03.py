@@ -10,7 +10,7 @@ queueFromProcess   = Queue()
 
 
 #-----------Fonctions------------------------
-def process(queueFromInterface, queueFromProcess):
+def process(queueFromInterface, queueFromProcess):    
     """Fonction process(queue x, queue y):
         La fonction contrôle les entrées et sorties du raspberry PI.
     """

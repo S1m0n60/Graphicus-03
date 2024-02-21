@@ -1,8 +1,8 @@
 # Interface Management
 from Windows.Graphicus03_Main import Ui_Graphicus03
-from PySide6.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QGraphicsRectItem, QGraphicsPolygonItem
-from PySide6.QtCore import QPointF, QObject, Signal, QThread
-from PySide6.QtGui import QPolygonF
+from PySide2.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QGraphicsRectItem, QGraphicsPolygonItem
+from PySide2.QtCore import QPointF, QObject, QThread, Signal
+from PySide2.QtGui import QPolygonF
 from modules import PySide_dark_theme
 # File Management with explorer
 import tkinter
@@ -249,7 +249,7 @@ def initWindow(queueOut, queueIn, is_test = False):
     win = MainWindow(queueOut, queueIn, is_test)
     win.show()
     PySide_dark_theme.toggleDarkTheme(app, PySide_dark_theme.darkTheme())
-    app.exec()
+    app.exec_()
 
 if __name__ == "__main__":
     # lance le protocole de test de gravure 
