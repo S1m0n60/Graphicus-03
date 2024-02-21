@@ -247,8 +247,8 @@ class worker(QObject):
 def initWindow(queueOut, queueIn, is_test = False):
     app = QApplication([])
     win = MainWindow(queueOut, queueIn, is_test)
-    win.show()
-    PySide_dark_theme.toggleDarkTheme(app, PySide_dark_theme.darkTheme())
+    win.showFullScreen()
+    # PySide_dark_theme.toggleDarkTheme(app, PySide_dark_theme.darkTheme())
     app.exec_()
 
 if __name__ == "__main__":
