@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>300</width>
+    <width>731</width>
     <height>500</height>
    </rect>
   </property>
@@ -18,7 +18,7 @@
   </property>
   <property name="maximumSize">
    <size>
-    <width>300</width>
+    <width>1000</width>
     <height>500</height>
    </size>
   </property>
@@ -30,7 +30,7 @@
     <property name="geometry">
      <rect>
       <x>12</x>
-      <y>60</y>
+      <y>100</y>
       <width>201</width>
       <height>20</height>
      </rect>
@@ -40,7 +40,7 @@
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>0</y>
+      <y>20</y>
       <width>301</width>
       <height>51</height>
      </rect>
@@ -64,7 +64,7 @@
     <property name="geometry">
      <rect>
       <x>220</x>
-      <y>60</y>
+      <y>100</y>
       <width>71</width>
       <height>23</height>
      </rect>
@@ -85,7 +85,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>90</y>
+      <y>140</y>
       <width>91</width>
       <height>21</height>
      </rect>
@@ -106,7 +106,7 @@
     <property name="geometry">
      <rect>
       <x>120</x>
-      <y>90</y>
+      <y>140</y>
       <width>91</width>
       <height>21</height>
      </rect>
@@ -133,15 +133,15 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>120</y>
-      <width>101</width>
+      <y>190</y>
+      <width>111</width>
       <height>21</height>
      </rect>
     </property>
     <property name="font">
      <font>
       <family>Source Serif Pro</family>
-      <pointsize>16</pointsize>
+      <pointsize>17</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -154,7 +154,7 @@
     <property name="geometry">
      <rect>
       <x>120</x>
-      <y>120</y>
+      <y>190</y>
       <width>171</width>
       <height>22</height>
      </rect>
@@ -172,7 +172,7 @@
     <property name="geometry">
      <rect>
       <x>220</x>
-      <y>90</y>
+      <y>140</y>
       <width>71</width>
       <height>22</height>
      </rect>
@@ -190,9 +190,9 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>380</y>
+      <y>350</y>
       <width>281</width>
-      <height>41</height>
+      <height>51</height>
      </rect>
     </property>
     <property name="font">
@@ -210,10 +210,10 @@
    <widget class="QGraphicsView" name="GV_logo">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>150</y>
-      <width>281</width>
-      <height>151</height>
+      <x>300</x>
+      <y>10</y>
+      <width>421</width>
+      <height>441</height>
      </rect>
     </property>
    </widget>
@@ -221,7 +221,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>430</y>
+      <y>420</y>
       <width>281</width>
       <height>23</height>
      </rect>
@@ -234,14 +234,14 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>299</y>
+      <y>230</y>
       <width>281</width>
-      <height>81</height>
+      <height>111</height>
      </rect>
     </property>
     <property name="font">
      <font>
-      <pointsize>10</pointsize>
+      <pointsize>11</pointsize>
       <weight>50</weight>
       <italic>false</italic>
       <bold>false</bold>
@@ -261,9 +261,9 @@
      <property name="geometry">
       <rect>
        <x>200</x>
-       <y>50</y>
+       <y>71</y>
        <width>71</width>
-       <height>22</height>
+       <height>31</height>
       </rect>
      </property>
      <property name="font">
@@ -280,10 +280,10 @@
     <widget class="QDoubleSpinBox" name="DSB_Hauteur">
      <property name="geometry">
       <rect>
-       <x>100</x>
-       <y>50</y>
-       <width>91</width>
-       <height>21</height>
+       <x>110</x>
+       <y>70</y>
+       <width>81</width>
+       <height>31</height>
       </rect>
      </property>
      <property name="font">
@@ -310,9 +310,9 @@
      <property name="geometry">
       <rect>
        <x>200</x>
-       <y>20</y>
+       <y>30</y>
        <width>71</width>
-       <height>22</height>
+       <height>31</height>
       </rect>
      </property>
      <property name="font">
@@ -329,10 +329,10 @@
     <widget class="QDoubleSpinBox" name="DSB_Largeur">
      <property name="geometry">
       <rect>
-       <x>100</x>
-       <y>20</y>
-       <width>91</width>
-       <height>21</height>
+       <x>110</x>
+       <y>30</y>
+       <width>81</width>
+       <height>31</height>
       </rect>
      </property>
      <property name="font">
@@ -359,15 +359,15 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>20</y>
-       <width>81</width>
-       <height>21</height>
+       <y>30</y>
+       <width>91</width>
+       <height>31</height>
       </rect>
      </property>
      <property name="font">
       <font>
        <family>Source Serif Pro</family>
-       <pointsize>13</pointsize>
+       <pointsize>15</pointsize>
        <weight>75</weight>
        <italic>false</italic>
        <bold>true</bold>
@@ -385,15 +385,15 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>50</y>
-       <width>81</width>
-       <height>21</height>
+       <y>70</y>
+       <width>91</width>
+       <height>31</height>
       </rect>
      </property>
      <property name="font">
       <font>
        <family>Source Serif Pro</family>
-       <pointsize>13</pointsize>
+       <pointsize>15</pointsize>
        <weight>75</weight>
        <italic>false</italic>
        <bold>true</bold>
@@ -414,7 +414,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>300</width>
+     <width>731</width>
      <height>21</height>
     </rect>
    </property>

@@ -1,8 +1,8 @@
 # Interface Management
 from Windows.Graphicus03_Main import Ui_Graphicus03
 from PySide2.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QGraphicsRectItem, QGraphicsPolygonItem
-from PySide2.QtCore import QPointF, QObject, QThread, Signal
-from PySide2.QtGui import QPolygonF
+from PySide2.QtCore import QPointF, QObject, QThread, Signal, Qt
+from PySide2.QtGui import QPolygonF, QBrush
 from modules import PySide_dark_theme
 # File Management with explorer
 import tkinter
@@ -60,6 +60,7 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
             print(self.selected_file.name)
             self.LE_csvFile.setText(self.selected_file.name)
             self.modifyImageViewer()
+            self.changeColorItem()
 
     def modifyImageViewer(self):
         """Modifie l'image du logo sur le graphique view avec l'image provenant du fichier SVG
@@ -112,6 +113,21 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
         self.scene.setSceneRect(0, 0, fartest_point[3]-closest_point[1], fartest_point[4]-closest_point[2])
         print("fini")
     
+    def changeColorItem(self):
+        for item in self.polygonItems:
+            collision_count = self.get_item_collisions(item) 
+            # print(item.zValue())
+            # if collision_count == 1:
+            #     continue
+            # elif collision_count == 0:
+            #     item.setBrush(Qt.white)
+            # elif collision_count == 2:
+            #     item.setBrush(Qt.red)
+            # elif collision_count >= 3:
+            #     item.setBrush(Qt.blue)
+            # else:
+            #     item.setBrush(Qt.black)
+
     def get_distance_from_origine(self, graphic_item: QGraphicsPolygonItem):
         """Retourne la distance entre le entre l'origine (0, 0) et la position d'un QGraphicsItem
 
@@ -209,6 +225,13 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
             if self.Laser.collidesWithItem(item):
                 collision += 1
         return collision % 2 
+    
+    def get_item_collisions(self, item) -> bool:
+        collision = -1
+        for other_item in self.polygonItems:
+            if item.collidesWithItem(other_item):
+                collision += 1                
+        return (collision)
     
 class worker(QObject):
     finished = Signal()
