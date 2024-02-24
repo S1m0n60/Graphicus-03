@@ -40,7 +40,45 @@ class Moteurs:
                  1 - capteur de fin de course actif
         """
         return GPIO.input(self.limit_switch_pins[switch_id-1])
-    
+    def enable_stepper_motor(self, motor_id):
+        """Fonction permettant d'activer un des moteurs pas-à-pas
+
+        Args:
+            motor_id (int): Identifiant du moteur pas-à-pas (1-3)
+        """
+        enable_pin = self.get_enable_pin(motor_id)
+        GPIO.output(enable_pin, GPIO.HIGH)
+        print(f"Stepper Motor {motor_id} enabled.")
+
+    def disable_stepper_motor(self, motor_id):
+        """Fonction permettant de désactiver un des moteurs pas-à-pas
+
+        Args:
+            motor_id (int): Identifiant du moteur pas-à-pas (1-3)
+        """
+        enable_pin = self.get_enable_pin(motor_id)
+        GPIO.output(enable_pin, GPIO.LOW)
+        print(f"Stepper Motor {motor_id} disabled.")
+
+    def get_enable_pin(self, motor_id):
+        """Fonction permettant de retourner la pin d'activation du moteur concerné
+
+        Args:
+            motor_id (int): Identifiant du moteur pas-à-pas (1-3)
+
+        Returns:
+            int: Valeur de la pin correspondante à l'identifiant du moteur en args
+        """
+        if motor_id == 1:
+            return self.enable_pin1
+        elif motor_id == 2:
+            return self.enable_pin2
+        elif motor_id == 3:
+            return self.enable_pin3
+        else:
+            print(f"Invalid motor_id: {motor_id}")
+            return None
+
     def stop_motors(self):
         """Fonction permettant d'arrêter les moteurs"""
         # Turn off all coils for motor 1
@@ -95,7 +133,7 @@ class Moteurs:
                 start_time = time.time() 
                 step_count += 1 
 
-            if self.is_limit_switch_triggered(limit_switch_pin1) == 1 or self.is_limit_switch_triggered(limit_switch_pin2) == 1:
+            if self.is_limit_switch_triggered(limit_switch_pin1) == 1:
                 return
 
         self.stepper_position += 1
@@ -133,7 +171,7 @@ class Moteurs:
                 start_time = time.time() 
                 step_count += 1 
 
-            if self.is_limit_switch_triggered(limit_switch_pin1) == 1 or self.is_limit_switch_triggered(limit_switch_pin2) == 1:
+            if self.is_limit_switch_triggered(limit_switch_pin1) == 1:
                 return
 
         self.stepper_position -= 1
@@ -215,8 +253,7 @@ class Moteurs:
         position = hauteur - distance_focale - diametre_verre
 
         self.move_stepper_to_distance(motor_id, position, 450)
-
-    
+   
     def gravure(self, queue_longueur_verre, queue_distance_debut_gravure, queue_button_start, queue_radius):
         """Fonction de séquence de gravure du verre
 
@@ -261,7 +298,6 @@ class Moteurs:
                 if current_position_x >= final_position_x and current_position_y <= final_position_y:
                     self.stop_motors()
 
-
     def read_stepper_position(self):
         """Fonction permettant de mettre les valeurs de positions parcourues en temps réel par le moteur 2 et la position d'angle du moteur 3 dans les files d'attente."""
         stepper_position = 0
@@ -276,8 +312,7 @@ class Moteurs:
     
             self.stepper_position_queue.put((motor_id, steps))
             self.stepper_angle_queue.put((motor_id, steps))
-
-    
+  
     def sequence(self, queue_longueur_verre, queue_distance_debut_gravure, queue_button_start, queue_radius):
         self.laser_go_to_home()
         self.move_board_down()
@@ -288,9 +323,9 @@ class Moteurs:
 
 
 testmoteur = Moteurs()
-#testmoteur.move_stepper_motor_forward(4,1,10)
-#testmoteur.move_stepper_motor_backwards(1,800,200)
-#testmoteur.move_stepper_motor_forward(1,200,200)
+testmoteur.enable_stepper_motor(1)
+testmoteur.move_stepper_motor_backwards(1,2500,500)
+testmoteur.move_stepper_motor_forward(1,2500,500)
 #print(testmoteur.is_limit_switch_triggered(2))
 #testmoteur.set_motor_speed(10)
 #testmoteur.read_motor_state()
@@ -301,8 +336,8 @@ testmoteur = Moteurs()
 #testmoteur.move_stepper_to_distance(1,-50,525)
 #testmoteur.move_stepper_motor_backwards(1,1000,100)
 #while True:
-    #print(testmoteur.is_limit_switch_triggered(2))
-     #testmoteur.read_stepper_position()
+    #print(testmoteur.is_limit_switch_triggered(1))
+    #testmoteur.read_stepper_position()
 #testmoteur.set_motor_speed(15)
 #testmoteur.move_board_up()
 #testmoteur.laser_go_to_home()
