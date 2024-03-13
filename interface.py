@@ -178,7 +178,7 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
         # connecter les signaux entre le worker et la thread associé
         self.thread.started.connect(self.worker.run_)
         self.worker.finished.connect(self.thread.quit)
-        self.worker._progress.connect(self.updateProgressbar)
+        self.worker._progress.connect(self.updateProgress)
         self.worker.finished.connect(self.worker.deleteLater)
         self.thread.finished.connect(self.thread.deleteLater)
         # start the thread
@@ -206,8 +206,12 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
     def progress_done(self):
         self.progressBar.setValue(self.progressBar.maximum())
 
-    def updateProgressbar(self, coods):
-        self.progressBar.setValue(coods[1] * int(self.scene.sceneRect().height()))
+    def updateProgress(self, coords):
+        x = coords[0]
+        y = coords[1]
+        collision = self.get_collisions(x, y)
+        # TODO allumer le laser en fonction de collision
+        self.progressBar.setValue(y * int(self.scene.sceneRect().height()))
 
     def startExecution_test_print(self):
         """test la génération de signal pour le laser
@@ -291,15 +295,10 @@ class worker(QObject):
                         stop = True
                         print("c est FINIS")
                 elif type(lecture) == list:
-                    x = lecture[0]
-                    y = lecture[1]
-                    collision = self.callback(x, y)
-                    if collision:
-                        # self.queueIn.mutex.acquire()
-                        # result_worker.append(lecture)
-                        # self.queueIn.mutex.release()
-                        self._progress.emit((x, y))
-                    # TODO met la pin du laser a "collision"
+                    x = lecture[1]
+                    y = lecture[0]
+                    self._progress.emit((x, y))
+                    
             else:
                 sleep(0.05)
 
