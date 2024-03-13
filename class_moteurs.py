@@ -30,6 +30,12 @@ class Moteurs:
         self.stepper_angle = 0
         self.angle_rotation = 10
 
+        self.enable_stepper_motor(1)
+        self.enable_stepper_motor(2)
+        self.enable_stepper_motor(3)
+        self.laser_go_to_home()
+        self.move_board_down()
+
     def is_limit_switch_triggered(self, switch_id):
         """Fonction pour vérifier si un des capteurs de fin de course est activé
 
@@ -133,6 +139,7 @@ class Moteurs:
                 #return
 
         self.stepper_position[motor_id] += 1
+        self.read_stepper_position()
 
     def move_stepper_motor_backwards(self, motor_id, steps, speed):
         """Fonction permettant de faire reculer un moteur pas-à-pas selon une vitesse et un nombre de pas spécifié
@@ -171,6 +178,7 @@ class Moteurs:
              #   return
 
         self.stepper_position[motor_id] -= 1
+        self.read_stepper_position()
 
     def get_coil_pins(self, motor_id):
         """Fonction utilisée dans les fonctions move_stepper_motor_forward et move_stepper_motor_backwards pour retourner les 
@@ -284,27 +292,8 @@ class Moteurs:
         angle_position += self.stepper_position[2]*(pi*self.queue_radius/100)
 
         processThread.put = ([stepper_position, angle_position])
-  
-    def queue_read(self, queue_in):
-        stop = False
-        while not stop:
-            if not queue_in.empty():
-                lecture = queue_in.get_nowait()
-                if type(lecture) == str:
-                    stop = (lecture == "stop")
-                elif type(lecture) == list:
-                    self.queue_button_start = lecture[0]
-                    self.queue_gravx = lecture[1]
-                    self.queue_gravy = lecture[2]
-                    self.queue_radius = lecture[3]
 
-    def sequence(self,queue_in):
-        self.enable_stepper_motor(1)
-        self.enable_stepper_motor(2)
-        self.enable_stepper_motor(3)
-        self.queue_read(queue_in)
-        self.laser_go_to_home()
-        self.move_board_down()
+    def sequence(self):
         self.move_board_to_pos()
         self.gravure()
         self.laser_go_to_home()
