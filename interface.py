@@ -190,6 +190,7 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
         print(width, height, radius)
         sleep(2)
         self.queueOut.put(["debut", width, height, radius])
+        print("put done")
 
     @staticmethod
     def getMesureInmm(value, unit):
@@ -278,6 +279,7 @@ class worker(QObject):
 
     def __init__(self, queueIn:Queue, target_func, end_call_func):
         super().__init__()
+        print("worker init")
         self.queueIn = queueIn
         self.callback = target_func
         self.end_call_func = end_call_func
