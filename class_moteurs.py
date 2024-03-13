@@ -4,6 +4,7 @@ import time
 from math import radians
 from math import cos
 from math import sin
+from math import pi
 
 class Moteurs:
     def __init__(self):
@@ -25,7 +26,7 @@ class Moteurs:
 
         self.stepper_position_queue = Queue()
         self.stepper_angle_queue = Queue()
-        self.stepper_position = 0
+        self.stepper_position = [0,0,0]
         self.stepper_angle = 0
         self.angle_rotation = 10
 
@@ -103,7 +104,6 @@ class Moteurs:
             steps (int): Nombre de pas désiré
             speed (float): Vitesse du moteur désirée (0-1000)
         """
-        self.stepper_position_queue.put((motor_id, steps))
 
         if speed > 525:
             speed = 525
@@ -132,7 +132,7 @@ class Moteurs:
             if self.is_limit_switch_triggered(limit_switch_pin1) == 1 or self.is_limit_switch_triggered(limit_switch_pin2) == 1:
                 return
 
-        self.stepper_position += 1
+        self.stepper_position[motor_id] += 1
 
     def move_stepper_motor_backwards(self, motor_id, steps, speed):
         """Fonction permettant de faire reculer un moteur pas-à-pas selon une vitesse et un nombre de pas spécifié
@@ -170,7 +170,7 @@ class Moteurs:
             if self.is_limit_switch_triggered(limit_switch_pin1) == 1 or self.is_limit_switch_triggered(limit_switch_pin2) == 1:
                 return
 
-        self.stepper_position -= 1
+        self.stepper_position[motor_id] -= 1
 
     def get_coil_pins(self, motor_id):
         """Fonction utilisée dans les fonctions move_stepper_motor_forward et move_stepper_motor_backwards pour retourner les 
@@ -268,41 +268,22 @@ class Moteurs:
 
         self.move_stepper_to_distance(motor_id=1, distance=position_initiale, speed=600)
 
-        radius = self.queue_radius
-        final_position_theta = radians(angle_rotation_intermediaire)
-        final_position_x = radius * cos(final_position_theta)
-        final_position_y = radius * sin(final_position_theta)
-
         button_press = self.queue_button_start
         if button_press == "debut*":
             
             self.move_stepper_to_distance(motor_id=1, distance=cst_debut, speed=600)
-            self.stepper_position_queue.put((1, cst_debut))
 
             self.move_stepper_motor_forward(motor_id=3, steps=int(angle_rotation_intermediaire), speed=600)
-            self.stepper_angle_queue.put(angle_rotation_intermediaire)
-            current_position_x, current_position_y = self.read_stepper_position()
             
             self.move_stepper_to_distance(motor_id=1, distance=-cst_debut, speed=600)
-            self.stepper_position_queue.put((1, -cst_debut))
 
-            if current_position_x >= final_position_x and current_position_y <= final_position_y:
-                self.stop_motors()
-
-    def read_stepper_position(self):
+    def read_stepper_position(self, processThread):
         """Fonction permettant de mettre les valeurs de positions parcourues en temps réel par le moteur 2 et la position d'angle du moteur 3 dans les files d'attente."""
-        stepper_position = 0
-        angle_position = 0
 
-        while not self.stepper_position_queue.empty():
-            motor_id, steps = self.stepper_position_queue.get()
-            if motor_id == 2:
-                stepper_position += steps
-            elif motor_id == 3:
-                angle_position += steps
-    
-            self.stepper_position_queue.put((motor_id, steps))
-            self.stepper_angle_queue.put((motor_id, steps))
+        stepper_position += (self.stepper_position[0]/0.125/(360/1.8))
+        angle_position += self.stepper_position[2]*(pi*self.queue_radius/100)
+
+        processThread.put = ([stepper_position, angle_position])
   
     def queue_read(self, queue_in):
         self.queue_button_start = queue_in[0]
@@ -310,11 +291,11 @@ class Moteurs:
         self.queue_gravy = queue_in[2]
         self.queue_radius = queue_in[3]
 
-    def sequence(self):
+    def sequence(self,queue_in):
         self.enable_stepper_motor(1)
         self.enable_stepper_motor(2)
         self.enable_stepper_motor(3)
-        self.queue_read()
+        self.queue_read(queue_in)
         self.laser_go_to_home()
         self.move_board_down()
         self.move_board_to_pos()

@@ -15,7 +15,8 @@ def process(queueFromInterface, queueFromProcess):
         La fonction contrôle les entrées et sorties du raspberry PI.
     """
     moteurs = Moteurs()
-    moteurs.sequence()
+    moteurs.sequence(queueFromInterface)
+    moteurs.read_stepper_position(queueFromProcess)
     return
 
 def interface(queueFromInterface, queueFromProcess):
