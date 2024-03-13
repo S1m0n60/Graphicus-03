@@ -285,11 +285,19 @@ class Moteurs:
 
         processThread.put = ([stepper_position, angle_position])
   
+
     def queue_read(self, queue_in):
-        self.queue_button_start = queue_in[0]
-        self.queue_gravx = queue_in[1]
-        self.queue_gravy = queue_in[2]
-        self.queue_radius = queue_in[3]
+        stop = False
+        while not stop:
+            if not queue_in.empty():
+                lecture = queue_in.get_nowait()
+                if type(lecture) == str:
+                    stop = (lecture == "stop")
+                elif type(lecture) == list:
+                    self.queue_button_start = lecture[0]
+                    self.queue_gravx = lecture[1]
+                    self.queue_gravy = lecture[2]
+                    self.queue_radius = lecture[3]
 
     def sequence(self,queue_in):
         self.enable_stepper_motor(1)

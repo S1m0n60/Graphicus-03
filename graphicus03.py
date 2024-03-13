@@ -5,6 +5,7 @@ from queue import Queue
 from class_moteurs import Moteurs
 from interface import initWindow
 
+
 #------------Variables------------
 queueFromInterface = Queue()
 queueFromProcess   = Queue()
