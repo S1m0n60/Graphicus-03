@@ -33,6 +33,10 @@ class Moteurs:
         self.stepper_angle = 0
         self.angle_rotation = 10
 
+        self.queue_gravx = 0
+        self.queue_gravy = 0
+        self.queue_radius = 0
+
         self.enable_stepper_motor(1)
         self.enable_stepper_motor(2)
         self.enable_stepper_motor(3)
@@ -141,8 +145,8 @@ class Moteurs:
             #if self.is_limit_switch_triggered(limit_switch_pin1) == 1 or self.is_limit_switch_triggered(limit_switch_pin2) == 1:
                 #return
 
-        self.stepper_position[motor_id] += 1
-        self.read_stepper_position()
+            self.stepper_position[motor_id] += 1
+            self.read_stepper_position()
 
     def move_stepper_motor_backwards(self, motor_id, steps, speed):
         """Fonction permettant de faire reculer un moteur pas-à-pas selon une vitesse et un nombre de pas spécifié
@@ -181,8 +185,8 @@ class Moteurs:
             #if self.is_limit_switch_triggered(limit_switch_pin1) == 1 or self.is_limit_switch_triggered(limit_switch_pin2) == 1:
              #   return
 
-        self.stepper_position[motor_id] -= 1
-        self.read_stepper_position()
+            self.stepper_position[motor_id] -= 1
+            self.read_stepper_position()
 
     def get_coil_pins(self, motor_id):
         """Fonction utilisée dans les fonctions move_stepper_motor_forward et move_stepper_motor_backwards pour retourner les 
@@ -233,7 +237,7 @@ class Moteurs:
            
         self.move_stepper_motor_forward(motor_id, steps=1000, speed=450)
 
-        self.stepper_position = 0
+        self.stepper_position[0] = 0
 
     def move_board_up(self):
         """Fonction permettant de bouger les moteurs 2 et 3 pas-à-pas en même temps pour faire bouger la plateforme vers le haut
@@ -241,7 +245,8 @@ class Moteurs:
         print('Board UP')
         motor_id = 2
 
-        self.move_stepper_motor_forward(motor_id, steps=10000, speed=450)
+        # self.move_stepper_motor_forward(motor_id, steps=10000, speed=450)
+        self.move_stepper_motor_forward(motor_id, steps=100, speed=450)
 
     def move_board_down(self):
         """Fonction permettant de bouger les moteurs 2 et 3 pas-à-pas en même temps pour faire bouger la plateforme vers le bas
@@ -249,7 +254,8 @@ class Moteurs:
         print('Board DOWN')
         motor_id = 2
 
-        self.move_stepper_motor_backwards(motor_id, steps=10000, speed=450)
+        # self.move_stepper_motor_backwards(motor_id, steps=10000, speed=450)
+        self.move_stepper_motor_backwards(motor_id, steps=100, speed=450)
 
     def move_board_to_pos(self):
         """Fonction permettant de bouger le plateau a la position de depart
@@ -296,9 +302,9 @@ class Moteurs:
 
     def read_stepper_position(self):
         """Fonction permettant de mettre les valeurs de positions parcourues en temps réel par le moteur 2 et la position d'angle du moteur 3 dans les files d'attente."""
-        print('Queue OUT')
-        stepper_position += (self.stepper_position[0]/0.125/(360/1.8))
-        angle_position += self.stepper_position[2]*(pi*self.queue_radius/100)
+        
+        stepper_position = (self.stepper_position[0]/0.125/(360/1.8))
+        angle_position = self.stepper_position[2]*(pi*self.queue_radius/100)
 
         self.queue_out.put = ([stepper_position, angle_position])
 
