@@ -33,6 +33,10 @@ class Moteurs:
         self.stepper_angle = 0
         self.angle_rotation = 10
 
+        self.queue_gravx = 0
+        self.queue_gravy = 0
+        self.queue_radius = 0
+
         self.enable_stepper_motor(1)
         self.enable_stepper_motor(2)
         self.enable_stepper_motor(3)
@@ -113,7 +117,6 @@ class Moteurs:
             steps (int): Nombre de pas désiré
             speed (float): Vitesse du moteur désirée (0-1000)
         """
-        print('Forward')
         if speed > 525:
             speed = 525
 
@@ -152,7 +155,6 @@ class Moteurs:
             steps (int): Nombre de pas désiré
             speed (float): Vitesse du moteur désirée (0-1000)
         """
-        print('Backwards')
         if speed > 525:
             speed = 525
             
@@ -233,7 +235,7 @@ class Moteurs:
            
         self.move_stepper_motor_forward(motor_id, steps=1000, speed=450)
 
-        self.stepper_position = 0
+        self.stepper_position[0] = 0
 
     def move_board_up(self):
         """Fonction permettant de bouger les moteurs 2 et 3 pas-à-pas en même temps pour faire bouger la plateforme vers le haut
@@ -241,6 +243,7 @@ class Moteurs:
         print('Board UP')
         motor_id = 2
 
+        # self.move_stepper_motor_forward(motor_id, steps=10000, speed=450)
         self.move_stepper_motor_forward(motor_id, steps=100, speed=450)
 
     def move_board_down(self):
@@ -249,6 +252,7 @@ class Moteurs:
         print('Board DOWN')
         motor_id = 2
 
+        # self.move_stepper_motor_backwards(motor_id, steps=10000, speed=450)
         self.move_stepper_motor_backwards(motor_id, steps=100, speed=450)
 
     def move_board_to_pos(self):
@@ -287,16 +291,16 @@ class Moteurs:
 
         button_press = self.queue_button_start
         if button_press == "debut*":
-            
-            self.move_stepper_to_distance(motor_id=1, distance=cst_debut, speed=600)
-
-            self.move_stepper_motor_forward(motor_id=3, steps=int(angle_rotation_intermediaire), speed=600)
-            
-            self.move_stepper_to_distance(motor_id=1, distance=-cst_debut, speed=600)
+            sens = 1
+            while self.stepper_position[2] < self.queue_gravx:
+                self.move_stepper_to_distance(motor_id=1, distance=cst_debut*sens, speed=600)
+                self.move_stepper_motor_forward(motor_id=3, steps=int(angle_rotation_intermediaire), speed=600)
+                
+                sens *= -1
 
     def read_stepper_position(self):
         """Fonction permettant de mettre les valeurs de positions parcourues en temps réel par le moteur 2 et la position d'angle du moteur 3 dans les files d'attente."""
-        print('Queue OUT')
+        
         stepper_position = (self.stepper_position[0]/0.125/(360/1.8))
         angle_position = self.stepper_position[2]*(pi*self.queue_radius/100)
 
