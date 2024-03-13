@@ -15,6 +15,7 @@ from math import sqrt
 from queue import Queue
 # test output
 import json
+from time import sleep
 
 
 class MainWindow(Ui_Graphicus03, QMainWindow):
@@ -175,10 +176,9 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
         self.worker = worker(self.queueIn, self.get_collisions, self.progress_done)
         self.worker.moveToThread(self.thread)
         # connecter les signaux entre le worker et la thread associé
-        self.thread.started.connect(self.worker.run)
+        self.thread.started.connect(self.worker.run_)
         self.worker.finished.connect(self.thread.quit)
         self.worker._progress.connect(self.updateProgressbar)
-        self.worker.close_thread.connect(self.kill_motorReadThread)
         self.worker.finished.connect(self.worker.deleteLater)
         self.thread.finished.connect(self.thread.deleteLater)
         # start the thread
@@ -188,10 +188,8 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
         height = self.getMesureInmm(self.DSB_Hauteur.value(), self.CB_unit_Hauteur.currentText())
         radius = self.getMesureInmm(self.DSB_radius.value() , self.CB_unit_radius.currentText())
         print(width, height, radius)
+        sleep(2)
         self.queueOut.put(["debut", width, height, radius])
-
-    def kill_motorReadThread(self):
-        self.queueOut.put("stop")
 
     @staticmethod
     def getMesureInmm(value, unit):
@@ -209,7 +207,7 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
         self.progressBar.setValue(self.progressBar.maximum())
 
     def updateProgressbar(self, coods):
-        self.progressBar.setValue(coods[0] * int(self.scene.sceneRect().height()) + coods[1])
+        self.progressBar.setValue(coods[1] * int(self.scene.sceneRect().height()))
 
     def startExecution_test_print(self):
         """test la génération de signal pour le laser
@@ -273,7 +271,6 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
 class worker(QObject):
     finished = Signal()
     _progress = Signal(tuple)
-    close_thread = Signal()
 
     def __init__(self, queueIn:Queue, target_func, end_call_func):
         super().__init__()
@@ -281,29 +278,33 @@ class worker(QObject):
         self.callback = target_func
         self.end_call_func = end_call_func
 
-    def run(self):
+    def run_(self):
         print("run")
         stop = False
-        result_worker = []
+        # result_worker = []
         while not stop:
-            if not self.queueIn.empty():
+            if not self.queueIn.qsize() == 0:
                 lecture = self.queueIn.get_nowait()
                 if type(lecture) == str:
                     if lecture == "finis":
                         self.end_call_func()
                         stop = True
+                        print("c est FINIS")
                 elif type(lecture) == list:
                     x = lecture[0]
                     y = lecture[1]
                     collision = self.callback(x, y)
                     if collision:
                         # self.queueIn.mutex.acquire()
-                        result_worker.append(lecture)
+                        # result_worker.append(lecture)
                         # self.queueIn.mutex.release()
                         self._progress.emit((x, y))
                     # TODO met la pin du laser a "collision"
-        with open("ouput_test_worker.json", 'w') as f:
-            json.dump(result_worker, f, indent=4)
+            else:
+                sleep(0.05)
+
+        # with open("ouput_test_worker.json", 'w') as f:
+        #     json.dump(result_worker, f, indent=4)
         self.finished.emit()
 
 def initWindow(queueOut, queueIn, is_test = False):
