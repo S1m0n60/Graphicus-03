@@ -14,8 +14,8 @@ class Moteurs:
         print('init')
         # Init stepper
         self.enable_pin1, self.coil_A1, self.coil_B1, self.coil_C1, self.coil_D1 = 1,23,20,22,12 # Moteur laser
-        self.enable_pin2, self.coil_A2, self.coil_B2, self.coil_C2, self.coil_D2 = 1,23,20,22,12 # Moteurs plateau
-        self.enable_pin3, self.coil_A3, self.coil_B3, self.coil_C3, self.coil_D3 = 1,12,13,14,15 # Moteur verre
+        self.enable_pin2, self.coil_A2, self.coil_B2, self.coil_C2, self.coil_D2 = 1, 4,13,27,21 # Moteurs plateau
+        self.enable_pin3, self.coil_A3, self.coil_B3, self.coil_C3, self.coil_D3 = 1,17, 9,18,10 # Moteur verre
 
         GPIO.setwarnings(False)
         GPIO.setmode(GPIO.BCM)
@@ -134,20 +134,23 @@ class Moteurs:
         step_count = 0
         start_time = time.time()
 
-        while step_count < steps:    
+        for _ in range(steps):    
             elapsed_time = time.time() - start_time
-            if elapsed_time >= delay:
+            
+            # if elapsed_time >= delay:
+            if True:
                 coils = coil_sequence[step_count%4]
                 for coil_pin, coil_state in zip(self.get_coil_pins(motor_id), coils):
                     GPIO.output(coil_pin, GPIO.HIGH if coil_state else GPIO.LOW)
                 start_time = time.time() 
-                step_count += 1 
+                # step_count += 1 
 
             #if self.is_limit_switch_triggered(limit_switch_pin1) == 1 or self.is_limit_switch_triggered(limit_switch_pin2) == 1:
                 #return
 
             self.stepper_position[motor_id - 1] += 1
-            # self.read_stepper_position()
+            self.read_stepper_position()
+            time.sleep(delay)
 
     def move_stepper_motor_backwards(self, motor_id, steps, speed):
         """Fonction permettant de faire reculer un moteur pas-à-pas selon une vitesse et un nombre de pas spécifié
@@ -173,9 +176,10 @@ class Moteurs:
         start_time = time.time()
         step_count = 0
 
-        while step_count < steps:  
+        for _ in range(steps):  
             elapsed_time = time.time() - start_time
-            if elapsed_time >= delay_:
+            # if elapsed_time >= delay_:
+            if True:
                 coils = coil_sequence[step_count%4]
                 for coil_pin, coil_state in zip(self.get_coil_pins(motor_id), coils):
                     GPIO.output(coil_pin, GPIO.HIGH if coil_state else GPIO.LOW)
@@ -184,10 +188,11 @@ class Moteurs:
 
             #if self.is_limit_switch_triggered(limit_switch_pin1) == 1 or self.is_limit_switch_triggered(limit_switch_pin2) == 1:
              #   return
-
+            
             self.stepper_position[motor_id - 1] -= 1
             self.read_stepper_position()
-
+            time.sleep(delay_)
+    
     def get_coil_pins(self, motor_id):
         """Fonction utilisée dans les fonctions move_stepper_motor_forward et move_stepper_motor_backwards pour retourner les 
            pins du moteur spécifié
