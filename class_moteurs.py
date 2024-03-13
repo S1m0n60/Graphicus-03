@@ -117,7 +117,6 @@ class Moteurs:
             steps (int): Nombre de pas désiré
             speed (float): Vitesse du moteur désirée (0-1000)
         """
-        print('Forward')
         if speed > 525:
             speed = 525
 
@@ -156,7 +155,6 @@ class Moteurs:
             steps (int): Nombre de pas désiré
             speed (float): Vitesse du moteur désirée (0-1000)
         """
-        print('Backwards')
         if speed > 525:
             speed = 525
             
@@ -293,12 +291,12 @@ class Moteurs:
 
         button_press = self.queue_button_start
         if button_press == "debut*":
-            
-            self.move_stepper_to_distance(motor_id=1, distance=cst_debut, speed=600)
-
-            self.move_stepper_motor_forward(motor_id=3, steps=int(angle_rotation_intermediaire), speed=600)
-            
-            self.move_stepper_to_distance(motor_id=1, distance=-cst_debut, speed=600)
+            sens = 1
+            while self.stepper_position[2] < self.queue_gravx:
+                self.move_stepper_to_distance(motor_id=1, distance=cst_debut*sens, speed=600)
+                self.move_stepper_motor_forward(motor_id=3, steps=int(angle_rotation_intermediaire), speed=600)
+                
+                sens *= -1
 
     def read_stepper_position(self):
         """Fonction permettant de mettre les valeurs de positions parcourues en temps réel par le moteur 2 et la position d'angle du moteur 3 dans les files d'attente."""
