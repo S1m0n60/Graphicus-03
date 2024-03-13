@@ -5,6 +5,7 @@ from math import radians
 from math import cos
 from math import sin
 from math import pi
+from pprint import pprint
 
 class Moteurs:
     def __init__(self, queue_in, queue_out):
@@ -31,8 +32,9 @@ class Moteurs:
         self.queue_in = queue_in
         self.stepper_position = [0,0,0]
         self.stepper_angle = 0
-        self.angle_rotation = 10
+        self.angle_rotation = 1.8
 
+        self.queue_button_start = False
         self.queue_gravx = 0
         self.queue_gravy = 0
         self.queue_radius = 0
@@ -144,8 +146,8 @@ class Moteurs:
             #if self.is_limit_switch_triggered(limit_switch_pin1) == 1 or self.is_limit_switch_triggered(limit_switch_pin2) == 1:
                 #return
 
-            self.stepper_position[motor_id] += 1
-            self.read_stepper_position()
+            self.stepper_position[motor_id - 1] += 1
+            # self.read_stepper_position()
 
     def move_stepper_motor_backwards(self, motor_id, steps, speed):
         """Fonction permettant de faire reculer un moteur pas-à-pas selon une vitesse et un nombre de pas spécifié
@@ -183,7 +185,7 @@ class Moteurs:
             #if self.is_limit_switch_triggered(limit_switch_pin1) == 1 or self.is_limit_switch_triggered(limit_switch_pin2) == 1:
              #   return
 
-            self.stepper_position[motor_id] -= 1
+            self.stepper_position[motor_id - 1] -= 1
             self.read_stepper_position()
 
     def get_coil_pins(self, motor_id):
@@ -290,13 +292,18 @@ class Moteurs:
         self.move_stepper_to_distance(motor_id=1, distance=position_initiale, speed=600)
 
         button_press = self.queue_button_start
-        if button_press == "debut*":
+        if button_press:
+            print("est tu dedans cherie?")
             sens = 1
-            while self.stepper_position[2] < self.queue_gravx:
+            while self.stepper_position[2]*(pi*self.queue_radius/100) < self.queue_gravx:
+                print(self.queue_gravx)
                 self.move_stepper_to_distance(motor_id=1, distance=cst_debut*sens, speed=600)
-                self.move_stepper_motor_forward(motor_id=3, steps=int(angle_rotation_intermediaire), speed=600)
+                self.move_stepper_motor_forward(motor_id=3, steps=1, speed=600)
                 
                 sens *= -1
+
+                print(self.stepper_position)
+                print(self.stepper_position[2]*(pi*self.queue_radius/100))
 
     def read_stepper_position(self):
         """Fonction permettant de mettre les valeurs de positions parcourues en temps réel par le moteur 2 et la position d'angle du moteur 3 dans les files d'attente."""
@@ -308,7 +315,7 @@ class Moteurs:
 
     def sequence(self):
         print('Sequence')
-        self.move_board_to_pos()
+        # self.move_board_to_pos()
         self.gravure()
         self.laser_go_to_home()
         self.move_board_down()

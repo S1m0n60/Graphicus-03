@@ -23,7 +23,7 @@ def process(queueFromInterface, queueFromProcess):
             if type(lecture) == str:
                 stop = (lecture == "stop")
             elif type(lecture) == list:
-                moteurs.queue_button_start = lecture[0]
+                moteurs.queue_button_start = lecture[0] == "debut"
                 moteurs.queue_gravx = lecture[1]
                 moteurs.queue_gravy = lecture[2]
                 moteurs.queue_radius = lecture[3]
