@@ -12,7 +12,7 @@ class Moteurs:
         # Init stepper
         self.enable_pin1, self.coil_A1, self.coil_B1, self.coil_C1, self.coil_D1 = 1,23,20,22,12 # Moteur laser
         self.enable_pin2, self.coil_A2, self.coil_B2, self.coil_C2, self.coil_D2 = 1,23,20,22,12 # Moteurs plateau
-        self.enable_pin3, self.coil_A3, self.coil_B3, self.coil_C3, self.coil_D3 = 11, 12, 13, 14, 15 # Moteur verre
+        self.enable_pin3, self.coil_A3, self.coil_B3, self.coil_C3, self.coil_D3 = 1,12,13,14,15 # Moteur verre
 
         GPIO.setwarnings(False)
         GPIO.setmode(GPIO.BCM)
@@ -48,7 +48,6 @@ class Moteurs:
         """
         enable_pin = self.get_enable_pin(motor_id)
         GPIO.output(enable_pin, GPIO.HIGH)
-        print(f"Stepper Motor {motor_id} enabled.")
 
     def disable_stepper_motor(self, motor_id):
         """Fonction permettant de désactiver un des moteurs pas-à-pas
@@ -58,7 +57,6 @@ class Moteurs:
         """
         enable_pin = self.get_enable_pin(motor_id)
         GPIO.output(enable_pin, GPIO.LOW)
-        print(f"Stepper Motor {motor_id} disabled.")
 
     def get_enable_pin(self, motor_id):
         """Fonction permettant de retourner la pin d'activation du moteur concerné
@@ -75,9 +73,6 @@ class Moteurs:
             return self.enable_pin2
         elif motor_id == 3:
             return self.enable_pin3
-        else:
-            print(f"Invalid motor_id: {motor_id}")
-            return None
 
     def stop_motors(self):
         """Fonction permettant d'arrêter les moteurs"""
@@ -133,7 +128,7 @@ class Moteurs:
                 start_time = time.time() 
                 step_count += 1 
 
-            if self.is_limit_switch_triggered(limit_switch_pin1) == 1:
+            if self.is_limit_switch_triggered(limit_switch_pin1) == 1 or self.is_limit_switch_triggered(limit_switch_pin2) == 1:
                 return
 
         self.stepper_position += 1
@@ -171,7 +166,7 @@ class Moteurs:
                 start_time = time.time() 
                 step_count += 1 
 
-            if self.is_limit_switch_triggered(limit_switch_pin1) == 1:
+            if self.is_limit_switch_triggered(limit_switch_pin1) == 1 or self.is_limit_switch_triggered(limit_switch_pin2) == 1:
                 return
 
         self.stepper_position -= 1
@@ -248,13 +243,13 @@ class Moteurs:
 
         motor_id = 2
         diametre_verre = 2 * queue_radius.get()
-        hauteur = 200
-        distance_focale = 10
+        hauteur = 200 ############################
+        distance_focale = 10 #####################
         position = hauteur - distance_focale - diametre_verre
 
         self.move_stepper_to_distance(motor_id, position, 450)
    
-    def gravure(self, queue_longueur_verre, queue_distance_debut_gravure, queue_button_start, queue_radius):
+    def gravure(self, queue_longueur_verre, queue_button_start, queue_radius):
         """Fonction de séquence de gravure du verre
 
         Args:
@@ -265,14 +260,11 @@ class Moteurs:
         """
         # Récupération des paramètres depuis les queues
         longueur_verre = queue_longueur_verre.get()
-        distance_debut_gravure = queue_distance_debut_gravure.get()
-        angle_rotation_intermediaire = self.angle_rotation
+        angle_rotation_intermediaire = self.angle_rotation ##########################
 
-        # Initial position of motor 1
-        longueur_totale = 30
-        position_initiale = (longueur_totale / 2 + longueur_verre / 2 + distance_debut_gravure)
+        longueur_totale = 30 ########################
+        position_initiale = (longueur_totale / 2 + longueur_verre / 2)
 
-        # Position of motor 1 to start engraving
         self.move_stepper_to_distance(motor_id=1, distance=position_initiale, speed=600)
 
         radius = queue_radius.get() 
@@ -280,20 +272,19 @@ class Moteurs:
         final_position_x = radius * cos(final_position_theta)
         final_position_y = radius * sin(final_position_theta)
 
-        # Check for button press to start engraving
         if not queue_button_start.empty():
             button_press = queue_button_start.get()
             if button_press == "debut*":
-                # Move forward
+                
                 self.move_stepper_to_distance(motor_id=1, distance=longueur_verre, speed=600)
                 self.stepper_position_queue.put((1, longueur_verre))
-                # Move backward
+
+                self.move_stepper_motor_forward(motor_id=3, steps=int(angle_rotation_intermediaire), speed=600)
+                self.stepper_angle_queue.put(angle_rotation_intermediaire)
+                current_position_x, current_position_y = self.read_stepper_position()
+               
                 self.move_stepper_to_distance(motor_id=1, distance=-longueur_verre, speed=600)
                 self.stepper_position_queue.put((1, -longueur_verre))
-                # Rotate motor 3
-                self.move_stepper_motor_forward(motor_id=3, steps=int(angle_rotation_intermediaire), speed=600)
-                self.angle_position_queue.put(angle_rotation_intermediaire)
-                current_position_x, current_position_y = self.read_stepper_position()
 
                 if current_position_x >= final_position_x and current_position_y <= final_position_y:
                     self.stop_motors()
@@ -313,19 +304,22 @@ class Moteurs:
             self.stepper_position_queue.put((motor_id, steps))
             self.stepper_angle_queue.put((motor_id, steps))
   
-    def sequence(self, queue_longueur_verre, queue_distance_debut_gravure, queue_button_start, queue_radius):
+    def sequence(self, queue_longueur_verre, queue_button_start, queue_radius):
+        self.enable_stepper_motor(1)
+        self.enable_stepper_motor(2)
+        self.enable_stepper_motor(3)
         self.laser_go_to_home()
         self.move_board_down()
         self.move_board_to_pos(queue_radius)
-        self.gravure(queue_longueur_verre, queue_distance_debut_gravure, queue_button_start, queue_radius)
+        self.gravure(queue_longueur_verre, queue_button_start, queue_radius)
         self.laser_go_to_home()
         self.move_board_down()
 
 
-testmoteur = Moteurs()
-testmoteur.enable_stepper_motor(1)
-testmoteur.move_stepper_motor_backwards(1,2500,500)
-testmoteur.move_stepper_motor_forward(1,2500,500)
+#testmoteur = Moteurs()
+#testmoteur.enable_stepper_motor(1)
+#testmoteur.move_stepper_motor_backwards(1,2500,500)
+#testmoteur.move_stepper_motor_forward(1,2500,500)
 #print(testmoteur.is_limit_switch_triggered(2))
 #testmoteur.set_motor_speed(10)
 #testmoteur.read_motor_state()
