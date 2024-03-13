@@ -130,7 +130,6 @@ class Moteurs:
         coil_sequence = [(1, 0, 1, 0), (0, 1, 1, 0), (0, 1, 0, 1), (1, 0, 0, 1)]
         delay_ = 1.0 / speed
         step_count = 0
-        start_time = time.time()
 
         while step_count < steps:    
             elapsed_time = time.time() - start_time
@@ -168,7 +167,6 @@ class Moteurs:
         
         coil_sequence = [(1, 0, 0, 1), (0, 1, 0, 1), (0, 1, 1, 0), (1, 0, 1, 0)]
         delay_ = 1.0 / speed
-        start_time = time.time()
         step_count = 0
 
         while step_count < steps:  
@@ -177,8 +175,6 @@ class Moteurs:
                 coils = coil_sequence[step_count%4]
                 for coil_pin, coil_state in zip(self.get_coil_pins(motor_id), coils):
                     GPIO.output(coil_pin, GPIO.HIGH if coil_state else GPIO.LOW)
-                start_time = time.time() 
-                step_count += 1 
 
                 #if self.is_limit_switch_triggered(limit_switch_pin1) == 1 or self.is_limit_switch_triggered(limit_switch_pin2) == 1:
                 #   return
@@ -280,7 +276,7 @@ class Moteurs:
         cst_debut = 10
 
         longueur_totale = 30 ########################
-        position_initiale = (longueur_totale / 2 + cst_debut)
+        position_initiale = ((longueur_totale / 2) + cst_debut)
 
         self.move_stepper_to_distance(motor_id=1, distance=position_initiale, speed=450)
 
