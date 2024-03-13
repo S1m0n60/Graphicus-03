@@ -10,6 +10,7 @@ class Moteurs:
     def __init__(self, queue_in, queue_out):
         """Initialisation des E/S pour le Raspberry Pi
         """
+        print('init')
         # Init stepper
         self.enable_pin1, self.coil_A1, self.coil_B1, self.coil_C1, self.coil_D1 = 1,23,20,22,12 # Moteur laser
         self.enable_pin2, self.coil_A2, self.coil_B2, self.coil_C2, self.coil_D2 = 1,23,20,22,12 # Moteurs plateau
@@ -112,7 +113,7 @@ class Moteurs:
             steps (int): Nombre de pas désiré
             speed (float): Vitesse du moteur désirée (0-1000)
         """
-
+        print('Forward')
         if speed > 525:
             speed = 525
 
@@ -151,6 +152,7 @@ class Moteurs:
             steps (int): Nombre de pas désiré
             speed (float): Vitesse du moteur désirée (0-1000)
         """
+        print('Backwards')
         if speed > 525:
             speed = 525
             
@@ -209,6 +211,7 @@ class Moteurs:
             distance (float): Distance à parcourir en millimètres.
             speed (float): Vitesse désirée du moteur (0-1000).
         """
+        print('Distance')
         # Constantes
         degres_par_pas = 1.8  # Degrés par pas du moteur
         pas_par_mm = 0.125  # Pas par millimètre de la vis sans fin
@@ -225,6 +228,7 @@ class Moteurs:
     def laser_go_to_home(self):
         """Fonction permettant le déplacement du moteur pas-à-pas jusqu'à l'activation d'un des 2 capteurs de fin de course
         """
+        print('Laser homing')
         motor_id = 1 
            
         self.move_stepper_motor_forward(motor_id, steps=1000, speed=450)
@@ -234,6 +238,7 @@ class Moteurs:
     def move_board_up(self):
         """Fonction permettant de bouger les moteurs 2 et 3 pas-à-pas en même temps pour faire bouger la plateforme vers le haut
         """
+        print('Board UP')
         motor_id = 2
 
         self.move_stepper_motor_forward(motor_id, steps=10000, speed=450)
@@ -241,6 +246,7 @@ class Moteurs:
     def move_board_down(self):
         """Fonction permettant de bouger les moteurs 2 et 3 pas-à-pas en même temps pour faire bouger la plateforme vers le bas
         """
+        print('Board DOWN')
         motor_id = 2
 
         self.move_stepper_motor_backwards(motor_id, steps=10000, speed=450)
@@ -251,7 +257,7 @@ class Moteurs:
         Args:
             queue_radius (float): Rayon récupéré depuis la file d'attente.
         """
-
+        print('Board POSITION')
         motor_id = 2
         diametre_verre = 2 * self.queue_radius
         hauteur = 200 ############################
@@ -269,6 +275,7 @@ class Moteurs:
             queue_button_start (bool): État du bouton de démarrage récupéré depuis la file d'attente.
             queue_radius (float): Rayon récupéré depuis la file d'attente.
         """
+        print('Gravure')
         # Récupération des paramètres depuis les queues
         angle_rotation_intermediaire = self.angle_rotation ##########################
         cst_debut = 10
@@ -289,13 +296,14 @@ class Moteurs:
 
     def read_stepper_position(self):
         """Fonction permettant de mettre les valeurs de positions parcourues en temps réel par le moteur 2 et la position d'angle du moteur 3 dans les files d'attente."""
-
+        print('Queue OUT')
         stepper_position += (self.stepper_position[0]/0.125/(360/1.8))
         angle_position += self.stepper_position[2]*(pi*self.queue_radius/100)
 
         self.queue_out.put = ([stepper_position, angle_position])
 
     def sequence(self):
+        print('Sequence')
         self.move_board_to_pos()
         self.gravure()
         self.laser_go_to_home()
