@@ -8,9 +8,8 @@ from class_moteurs import Moteurs
 queueFromInterface = Queue()
 queueFromProcess   = Queue()
 
-
 #-----------Fonctions------------------------
-def process(queueFromInterface, queueFromProcess):
+def process(queueFromInterface, queueFromProcess):    
     """Fonction process(queue x, queue y):
         La fonction contrôle les entrées et sorties du raspberry PI.
     """
@@ -19,9 +18,7 @@ def process(queueFromInterface, queueFromProcess):
     return
 
 def interface(queueFromInterface, queueFromProcess):
-    """Fonction interface(queue x, queue y):
-        La fonction contrôle l'interface utilisateur.
-    """
+    initWindow(queueFromInterface, queueFromProcess)
     return
 
 #-----------Creation de thread----------------
