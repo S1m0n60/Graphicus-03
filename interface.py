@@ -170,7 +170,7 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
         print("thread initialise")
 
         self.thread = QThread()
-        self.worker = worker(self.queueIn, self.queueOut, self.get_collisions, self.progress_done)
+        self.worker = worker(self.queueIn, self.get_collisions, self.progress_done)
         self.worker.moveToThread(self.thread)
         # connecter les signaux entre le worker et la thread associé
         self.thread.started.connect(self.worker.run)
@@ -184,7 +184,7 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
         width  = self.getMesureInmm(self.DSB_Largeur.value(), self.CB_unit_Largeur.currentText())
         height = self.getMesureInmm(self.DSB_Hauteur.value(), self.CB_unit_Hauteur.currentText())
         radius = self.getMesureInmm(self.DSB_radius.value() , self.CB_unit_radius.currentText())
-        
+        print(width, height, radius)
         self.queueOut.put(["debut", width, height, radius])
 
     @staticmethod
@@ -194,7 +194,7 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
             return value
         elif unit == "cm":
             return value*10
-        elif unit == "in":
+        elif unit == "po":
             return value*25.4
         else:
             return 0
@@ -268,10 +268,9 @@ class worker(QObject):
     finished = Signal()
     _progress = Signal(tuple)
 
-    def __init__(self, queueIn:Queue, queueOut:Queue, target_func, end_call_func):
+    def __init__(self, queueIn:Queue, target_func, end_call_func):
         super().__init__()
         self.queueIn = queueIn
-        self.queueOut = queueOut
         self.callback = target_func
         self.end_call_func = end_call_func
 
