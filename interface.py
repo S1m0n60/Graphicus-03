@@ -170,7 +170,7 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
         print("thread initialise")
 
         self.thread = QThread()
-        self.worker = worker(self.queueIn, self.get_collisions, self.progress_done)
+        self.worker = worker(self.queueIn, self.queueOut, self.get_collisions, self.progress_done)
         self.worker.moveToThread(self.thread)
         # connecter les signaux entre le worker et la thread associé
         self.thread.started.connect(self.worker.run)
@@ -181,11 +181,23 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
         # start the thread
         self.thread.start()
 
-        width = self.scene.sceneRect().width()
-        height = self.scene.sceneRect().height()
-        self.queueOut.put(f"debut-{int(width)}-{int(height)}")
+        width  = self.getMesureInmm(self.DSB_Largeur.value(), self.CB_unit_Largeur.currentText())
+        height = self.getMesureInmm(self.DSB_Hauteur.value(), self.CB_unit_Hauteur.currentText())
+        radius = self.getMesureInmm(self.DSB_radius.value() , self.CB_unit_radius.currentText())
+        
+        self.queueOut.put(["debut", width, height, radius])
 
-        print("sortie du while")
+    @staticmethod
+    def getMesureInmm(value, unit):
+        # TODO RIGHT HERE
+        if unit == "mm":
+            return value
+        elif unit == "cm":
+            return value*10
+        elif unit == "in":
+            return value*25.4
+        else:
+            return 0
 
     def progress_done(self):
         self.progressBar.setValue(self.progressBar.maximum())
@@ -256,9 +268,10 @@ class worker(QObject):
     finished = Signal()
     _progress = Signal(tuple)
 
-    def __init__(self, queueIn:Queue, target_func, end_call_func):
+    def __init__(self, queueIn:Queue, queueOut:Queue, target_func, end_call_func):
         super().__init__()
         self.queueIn = queueIn
+        self.queueOut = queueOut
         self.callback = target_func
         self.end_call_func = end_call_func
 
@@ -282,6 +295,7 @@ class worker(QObject):
                         result_worker.append(lecture)
                         # self.queueIn.mutex.release()
                         self._progress.emit((x, y))
+                    # TODO met la pin du laser a "collision"
         with open("ouput_test_worker.json", 'w') as f:
             json.dump(result_worker, f, indent=4)
         self.finished.emit()
