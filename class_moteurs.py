@@ -40,6 +40,7 @@ class Moteurs:
                  1 - capteur de fin de course actif
         """
         return GPIO.input(self.limit_switch_pins[switch_id-1])
+    
     def enable_stepper_motor(self, motor_id):
         """Fonction permettant d'activer un des moteurs pas-à-pas
 
@@ -234,7 +235,7 @@ class Moteurs:
 
         self.move_stepper_motor_backwards(motor_id, steps=10000, speed=450)
 
-    def move_board_to_pos(self, queue_radius):
+    def move_board_to_pos(self):
         """Fonction permettant de bouger le plateau a la position de depart
 
         Args:
@@ -242,14 +243,14 @@ class Moteurs:
         """
 
         motor_id = 2
-        diametre_verre = 2 * queue_radius.get()
+        diametre_verre = 2 * self.queue_radius
         hauteur = 200 ############################
         distance_focale = 10 #####################
         position = hauteur - distance_focale - diametre_verre
 
         self.move_stepper_to_distance(motor_id, position, 450)
    
-    def gravure(self, queue_longueur_verre, queue_button_start, queue_radius):
+    def gravure(self):
         """Fonction de séquence de gravure du verre
 
         Args:
@@ -259,35 +260,34 @@ class Moteurs:
             queue_radius (float): Rayon récupéré depuis la file d'attente.
         """
         # Récupération des paramètres depuis les queues
-        longueur_verre = queue_longueur_verre.get()
         angle_rotation_intermediaire = self.angle_rotation ##########################
+        cst_debut = 10
 
         longueur_totale = 30 ########################
-        position_initiale = (longueur_totale / 2 + longueur_verre / 2)
+        position_initiale = (longueur_totale / 2 + cst_debut)
 
         self.move_stepper_to_distance(motor_id=1, distance=position_initiale, speed=600)
 
-        radius = queue_radius.get() 
+        radius = self.queue_radius
         final_position_theta = radians(angle_rotation_intermediaire)
         final_position_x = radius * cos(final_position_theta)
         final_position_y = radius * sin(final_position_theta)
 
-        if not queue_button_start.empty():
-            button_press = queue_button_start.get()
-            if button_press == "debut*":
-                
-                self.move_stepper_to_distance(motor_id=1, distance=longueur_verre, speed=600)
-                self.stepper_position_queue.put((1, longueur_verre))
+        button_press = self.queue_button_start
+        if button_press == "debut*":
+            
+            self.move_stepper_to_distance(motor_id=1, distance=cst_debut, speed=600)
+            self.stepper_position_queue.put((1, cst_debut))
 
-                self.move_stepper_motor_forward(motor_id=3, steps=int(angle_rotation_intermediaire), speed=600)
-                self.stepper_angle_queue.put(angle_rotation_intermediaire)
-                current_position_x, current_position_y = self.read_stepper_position()
-               
-                self.move_stepper_to_distance(motor_id=1, distance=-longueur_verre, speed=600)
-                self.stepper_position_queue.put((1, -longueur_verre))
+            self.move_stepper_motor_forward(motor_id=3, steps=int(angle_rotation_intermediaire), speed=600)
+            self.stepper_angle_queue.put(angle_rotation_intermediaire)
+            current_position_x, current_position_y = self.read_stepper_position()
+            
+            self.move_stepper_to_distance(motor_id=1, distance=-cst_debut, speed=600)
+            self.stepper_position_queue.put((1, -cst_debut))
 
-                if current_position_x >= final_position_x and current_position_y <= final_position_y:
-                    self.stop_motors()
+            if current_position_x >= final_position_x and current_position_y <= final_position_y:
+                self.stop_motors()
 
     def read_stepper_position(self):
         """Fonction permettant de mettre les valeurs de positions parcourues en temps réel par le moteur 2 et la position d'angle du moteur 3 dans les files d'attente."""
@@ -304,34 +304,21 @@ class Moteurs:
             self.stepper_position_queue.put((motor_id, steps))
             self.stepper_angle_queue.put((motor_id, steps))
   
-    def sequence(self, queue_longueur_verre, queue_button_start, queue_radius):
+    def queue_read(self, queue_in):
+        self.queue_button_start = queue_in[0]
+        self.queue_gravx = queue_in[1]
+        self.queue_gravy = queue_in[2]
+        self.queue_radius = queue_in[3]
+
+    def sequence(self):
         self.enable_stepper_motor(1)
         self.enable_stepper_motor(2)
         self.enable_stepper_motor(3)
+        self.queue_read()
         self.laser_go_to_home()
         self.move_board_down()
-        self.move_board_to_pos(queue_radius)
-        self.gravure(queue_longueur_verre, queue_button_start, queue_radius)
+        self.move_board_to_pos()
+        self.gravure()
         self.laser_go_to_home()
         self.move_board_down()
 
-
-#testmoteur = Moteurs()
-#testmoteur.enable_stepper_motor(1)
-#testmoteur.move_stepper_motor_backwards(1,2500,500)
-#testmoteur.move_stepper_motor_forward(1,2500,500)
-#print(testmoteur.is_limit_switch_triggered(2))
-#testmoteur.set_motor_speed(10)
-#testmoteur.read_motor_state()
-#testmoteur.read_stepper_position()
-#testmoteur.enable_torque()
-#testmoteur.disable_stepper_motor(1)
-#testmoteur.disable_stepper_motor(4)
-#testmoteur.move_stepper_to_distance(1,-50,525)
-#testmoteur.move_stepper_motor_backwards(1,1000,100)
-#while True:
-    #print(testmoteur.is_limit_switch_triggered(1))
-    #testmoteur.read_stepper_position()
-#testmoteur.set_motor_speed(15)
-#testmoteur.move_board_up()
-#testmoteur.laser_go_to_home()
