@@ -130,27 +130,21 @@ class Moteurs:
             limit_switch_pin2 = 4
         
         coil_sequence = [(1, 0, 1, 0), (0, 1, 1, 0), (0, 1, 0, 1), (1, 0, 0, 1)]
-        delay = 1.0 / speed
+        delay_ = 1.0 / speed
         step_count = 0
-        start_time = time.time()
 
         for _ in range(steps):    
-            elapsed_time = time.time() - start_time
-            
-            # if elapsed_time >= delay:
             if True:
                 coils = coil_sequence[step_count%4]
                 for coil_pin, coil_state in zip(self.get_coil_pins(motor_id), coils):
                     GPIO.output(coil_pin, GPIO.HIGH if coil_state else GPIO.LOW)
-                start_time = time.time() 
-                # step_count += 1 
 
             #if self.is_limit_switch_triggered(limit_switch_pin1) == 1 or self.is_limit_switch_triggered(limit_switch_pin2) == 1:
                 #return
 
             self.stepper_position[motor_id - 1] += 1
             self.read_stepper_position()
-            time.sleep(delay)
+            time.sleep(delay_)
 
     def move_stepper_motor_backwards(self, motor_id, steps, speed):
         """Fonction permettant de faire reculer un moteur pas-à-pas selon une vitesse et un nombre de pas spécifié
@@ -173,18 +167,13 @@ class Moteurs:
         
         coil_sequence = [(1, 0, 0, 1), (0, 1, 0, 1), (0, 1, 1, 0), (1, 0, 1, 0)]
         delay_ = 1.0 / speed
-        start_time = time.time()
         step_count = 0
 
         for _ in range(steps):  
-            elapsed_time = time.time() - start_time
-            # if elapsed_time >= delay_:
             if True:
                 coils = coil_sequence[step_count%4]
                 for coil_pin, coil_state in zip(self.get_coil_pins(motor_id), coils):
                     GPIO.output(coil_pin, GPIO.HIGH if coil_state else GPIO.LOW)
-                start_time = time.time() 
-                step_count += 1 
 
             #if self.is_limit_switch_triggered(limit_switch_pin1) == 1 or self.is_limit_switch_triggered(limit_switch_pin2) == 1:
              #   return
@@ -292,7 +281,7 @@ class Moteurs:
         cst_debut = 10
 
         longueur_totale = 30 ########################
-        position_initiale = (longueur_totale / 2 + cst_debut)
+        position_initiale = ((longueur_totale / 2) + cst_debut)
 
         self.move_stepper_to_distance(motor_id=1, distance=position_initiale, speed=600)
 
@@ -316,7 +305,7 @@ class Moteurs:
         stepper_position = (self.stepper_position[0]/0.125/(360/1.8))
         angle_position = self.stepper_position[2]*(pi*self.queue_radius/100)
 
-        self.queue_out.put = ([stepper_position, angle_position])
+        self.queue_out.put([stepper_position, angle_position])
 
     def sequence(self):
         print('Sequence')
@@ -324,4 +313,5 @@ class Moteurs:
         self.gravure()
         self.laser_go_to_home()
         self.move_board_down()
+        
 
