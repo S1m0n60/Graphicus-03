@@ -15,7 +15,7 @@ def process(queueFromInterface, queueFromProcess):
     """Fonction process(queue x, queue y):
         La fonction contrôle les entrées et sorties du raspberry PI.
     """
-    moteurs = Moteurs()
+    moteurs = Moteurs(queueFromInterface, queueFromProcess)
     stop = False
     while not stop:
         if not queueFromInterface.empty():
