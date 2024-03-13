@@ -289,10 +289,8 @@ class Moteurs:
             if current_position_x >= final_position_x and current_position_y <= final_position_y:
                 self.stop_motors()
 
-    def read_stepper_position(self):
+    def read_stepper_position(self, processThread):
         """Fonction permettant de mettre les valeurs de positions parcourues en temps réel par le moteur 2 et la position d'angle du moteur 3 dans les files d'attente."""
-        stepper_position = 0
-        angle_position = 0
 
         while not self.stepper_position_queue.empty():
             motor_id, steps = self.stepper_position_queue.get()
@@ -303,6 +301,7 @@ class Moteurs:
     
             self.stepper_position_queue.put((motor_id, steps))
             self.stepper_angle_queue.put((motor_id, steps))
+            processThread.put = ([self.stepper_position_queue, self.stepper_angle_queue])
   
     def queue_read(self, queue_in):
         self.queue_button_start = queue_in[0]
@@ -310,11 +309,11 @@ class Moteurs:
         self.queue_gravy = queue_in[2]
         self.queue_radius = queue_in[3]
 
-    def sequence(self):
+    def sequence(self,queue_in):
         self.enable_stepper_motor(1)
         self.enable_stepper_motor(2)
         self.enable_stepper_motor(3)
-        self.queue_read()
+        self.queue_read(queue_in)
         self.laser_go_to_home()
         self.move_board_down()
         self.move_board_to_pos()
