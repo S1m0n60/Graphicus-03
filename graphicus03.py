@@ -8,7 +8,6 @@ from interface import initWindow
 queueFromInterface = Queue()
 queueFromProcess   = Queue()
 
-
 #-----------Fonctions------------------------
 def process(queueFromInterface, queueFromProcess):    
     """Fonction process(queue x, queue y):
@@ -28,13 +27,13 @@ def process(queueFromInterface, queueFromProcess):
                 height = int(split_lect[2])
                 stop = True
                 
-    for i in range (0, width, 2):
-        for y in range (0, height, 2):
+    for i in range (0, width):
+        for y in range (0, height):
             queueFromProcess.mutex.acquire()
             # print([i, y])
             queueFromProcess.mutex.release()
             queueFromProcess.put([i, y])
-            time.sleep(0.01)
+            time.sleep(0.0001)
     queueFromProcess.put("finis")
     return
 

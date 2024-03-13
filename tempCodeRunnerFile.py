@@ -1,1 +1,2 @@
-Exec
+gonItems:
+            item_.setScale(scale)
