@@ -7,7 +7,7 @@ from math import sin
 from math import pi
 
 class Moteurs:
-    def __init__(self):
+    def __init__(self, queue_in, queue_out):
         """Initialisation des E/S pour le Raspberry Pi
         """
         # Init stepper
@@ -26,6 +26,8 @@ class Moteurs:
 
         self.stepper_position_queue = Queue()
         self.stepper_angle_queue = Queue()
+        self.queue_out = queue_out
+        self.queue_in = queue_in
         self.stepper_position = [0,0,0]
         self.stepper_angle = 0
         self.angle_rotation = 10
@@ -285,13 +287,13 @@ class Moteurs:
             
             self.move_stepper_to_distance(motor_id=1, distance=-cst_debut, speed=600)
 
-    def read_stepper_position(self, processThread):
+    def read_stepper_position(self):
         """Fonction permettant de mettre les valeurs de positions parcourues en temps réel par le moteur 2 et la position d'angle du moteur 3 dans les files d'attente."""
 
         stepper_position += (self.stepper_position[0]/0.125/(360/1.8))
         angle_position += self.stepper_position[2]*(pi*self.queue_radius/100)
 
-        processThread.put = ([stepper_position, angle_position])
+        self.queue_out.put = ([stepper_position, angle_position])
 
     def sequence(self):
         self.move_board_to_pos()
