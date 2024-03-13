@@ -176,7 +176,7 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
         self.thread.started.connect(self.worker.run)
         self.worker.finished.connect(self.thread.quit)
         self.worker._progress.connect(self.updateProgressbar)
-        self.worker.close_thread(lambda: self.queueOut.put("stop"))
+        self.worker.close_thread.connect(self.kill_motorReadThread)
         self.worker.finished.connect(self.worker.deleteLater)
         self.thread.finished.connect(self.thread.deleteLater)
         # start the thread
@@ -187,6 +187,9 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
         radius = self.getMesureInmm(self.DSB_radius.value() , self.CB_unit_radius.currentText())
         print(width, height, radius)
         self.queueOut.put(["debut", width, height, radius])
+
+    def kill_motorReadThread(self):
+        self.queueOut.put("stop")
 
     @staticmethod
     def getMesureInmm(value, unit):
