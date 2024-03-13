@@ -129,8 +129,8 @@ class Moteurs:
                 start_time = time.time() 
                 step_count += 1 
 
-            if self.is_limit_switch_triggered(limit_switch_pin1) == 1 or self.is_limit_switch_triggered(limit_switch_pin2) == 1:
-                return
+            #if self.is_limit_switch_triggered(limit_switch_pin1) == 1 or self.is_limit_switch_triggered(limit_switch_pin2) == 1:
+                #return
 
         self.stepper_position[motor_id] += 1
 
@@ -167,8 +167,8 @@ class Moteurs:
                 start_time = time.time() 
                 step_count += 1 
 
-            if self.is_limit_switch_triggered(limit_switch_pin1) == 1 or self.is_limit_switch_triggered(limit_switch_pin2) == 1:
-                return
+            #if self.is_limit_switch_triggered(limit_switch_pin1) == 1 or self.is_limit_switch_triggered(limit_switch_pin2) == 1:
+             #   return
 
         self.stepper_position[motor_id] -= 1
 
@@ -285,7 +285,6 @@ class Moteurs:
 
         processThread.put = ([stepper_position, angle_position])
   
-
     def queue_read(self, queue_in):
         stop = False
         while not stop:

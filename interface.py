@@ -176,6 +176,7 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
         self.thread.started.connect(self.worker.run)
         self.worker.finished.connect(self.thread.quit)
         self.worker._progress.connect(self.updateProgressbar)
+        self.worker.close_thread(lambda: self.queueOut.put("stop"))
         self.worker.finished.connect(self.worker.deleteLater)
         self.thread.finished.connect(self.thread.deleteLater)
         # start the thread
@@ -267,6 +268,7 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
 class worker(QObject):
     finished = Signal()
     _progress = Signal(tuple)
+    close_thread = Signal()
 
     def __init__(self, queueIn:Queue, target_func, end_call_func):
         super().__init__()
