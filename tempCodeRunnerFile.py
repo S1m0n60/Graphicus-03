@@ -1,2 +1,2 @@
-gonItems:
-            item_.setScale(scale)
+
+            time.sleep(0.0001)

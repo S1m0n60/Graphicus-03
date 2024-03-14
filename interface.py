@@ -161,6 +161,24 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
         return [distance, b_rect.x(), b_rect.y(), b_rect.x()+b_rect.width(), b_rect.y()+b_rect.height()]
 
     def startExecution(self):
+        step_laser = 0.5        # mm/pas
+        step_angle = 1.8        # degre/pas
+        hauteur = self.DSB_Hauteur.value() # TODO modifier ici pour l'avoir en mm
+        largeur = self.DSB_Largeur.value() # TODO modifier ici pour l'avoir en mm
+
+        laser_map_in_step = [[]]
+
+        nb_step_laser = int(hauteur/step_laser)
+        nb_step_verre = int(largeur/step_angle)
+        
+        for y in range(nb_step_verre):
+            pos_y = step_angle/2 + y*step_angle
+            for x in range(nb_step_laser):
+                pos_x = step_laser/2 + x*step_laser
+                laser_map_in_step[y][x] = self.get_collisions(pos_x, pos_y)
+        print("fini de get la map laser")
+
+    def startExecution_collision(self):
         """lance le signal dans la Queue pour débuter la gravure et initilise la reception des positions pour graver
         """
         self.Laser = QGraphicsRectItem(0.5, 0.5, 0.01, 0.01)
