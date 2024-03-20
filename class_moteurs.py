@@ -2,7 +2,7 @@ from queue import Queue
 import RPi.GPIO as GPIO
 import time
 from math import pi
-from icecream import ic
+#from icecream import ic
 
 class Moteurs:
     def __init__(self, queue_in, queue_out):
