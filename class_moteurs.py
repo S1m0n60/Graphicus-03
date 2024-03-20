@@ -1,9 +1,6 @@
 from queue import Queue
 import RPi.GPIO as GPIO
 import time
-from math import radians
-from math import cos
-from math import sin
 from math import pi
 
 class Moteurs:
