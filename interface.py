@@ -195,9 +195,11 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
         
         print("finis ic")
         print("thread initialise")
+        rapport_h = self.scene.itemsBoundingRect.y()/self.DSB_Hauteur.value()
+        rapport_l = self.scene.itemsBoundingRect.x()/self.DSB_Largeur.value()
 
         self.thread = QThread()
-        self.worker = worker(self.queueIn, ls_laser, self.progress_done)
+        self.worker = worker(self.queueIn, ls_laser, self.progress_done, rapport_h, rapport_l)
         self.worker.moveToThread(self.thread)
         # connecter les signaux entre le worker et la thread associé
         self.thread.started.connect(self.worker.run_)
@@ -306,12 +308,14 @@ class worker(QObject):
     finished = Signal()
     _progress = Signal(tuple)
 
-    def __init__(self, queueIn:Queue, target_func, end_call_func):
+    def __init__(self, queueIn:Queue, target_func, end_call_func, rH, rL):
         super().__init__()
         print("worker init")
         self.queueIn = queueIn
         self.callback = target_func
         self.end_call_func = end_call_func
+        self.rH = rH
+        self.rL = rL
 
     def run_(self):
         print("run")
@@ -325,8 +329,8 @@ class worker(QObject):
                         self.end_call_func()
                         stop = True
                 elif type(lecture) == list:
-                    x = lecture[0]
-                    y = lecture[1]
+                    x = lecture[0]*self.rH
+                    y = lecture[1]*self.rL
                     res_y = self.ls_laser.get(y) or self.ls_laser[min(self.ls_laser.keys(), key = lambda key: abs(key-y))]
                     res_x = res_y.get(x) or res_y[min(res_y.keys(), key = lambda key: abs(key-x))]
                     GPIO.output(LASER, res_x)
