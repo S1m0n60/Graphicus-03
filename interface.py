@@ -55,7 +55,7 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
             CB_unit.addItems(["cm", "mm", "po"])
         self.progressBar.setValue(0)
         for DSB_item in [self.DSB_Hauteur, self.DSB_Largeur, self.DSB_radius]:
-            DSB_item.setValue(25)
+            DSB_item.setValue(5)
 
     def fileSelection(self):  
         """Ouvre l'exploreur de fichier pour selectionner un SVG
@@ -193,7 +193,8 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
         radius = self.getMesureInmm(self.DSB_radius.value() , self.CB_unit_radius.currentText())
         print(width, height, radius)
         # controle laser
-        GPIO.setup(LASER, GPIO.OUT, pull_up_down=GPIO.PUD_UP)
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(LASER, GPIO.OUT)
         
 
         sleep(2)
@@ -296,25 +297,25 @@ class worker(QObject):
     def run_(self):
         print("run")
         stop = False
-        # result_worker = []
-        # while not stop:
-        #     if not self.queueIn.qsize() == 0:
-        #         lecture = self.queueIn.get_nowait()
-        #         if type(lecture) == str:
-        #             if lecture == "finis":
-        #                 self.end_call_func()
-        #                 stop = True
-        #                 print("c est FINIS")
-        #         elif type(lecture) == list:
-        #             x = lecture[1]
-        #             y = lecture[0]
-        #             self._progress.emit((x, y))
+        result_worker = []
+        while not stop:
+            if not self.queueIn.qsize() == 0:
+                lecture = self.queueIn.get_nowait()
+                if type(lecture) == str:
+                    if lecture == "finis":
+                        self.end_call_func()
+                        stop = True
+                        print("c est FINIS")
+                elif type(lecture) == list:
+                    x = lecture[1]
+                    y = lecture[0]
+                    self._progress.emit((x, y))
                     
-        #     else:
-        #         sleep(0.05)
+            else:
+                sleep(0.05)
 
-        # with open("ouput_test_worker.json", 'w') as f:
-        #     json.dump(result_worker, f, indent=4)
+        with open("ouput_test_worker.json", 'w') as f:
+            json.dump(result_worker, f, indent=4)
         self.finished.emit()
 
 def initWindow(queueOut, queueIn, is_test = False):
