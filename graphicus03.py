@@ -7,7 +7,6 @@ from interface import initWindow
 #------------Variables------------
 queueFromInterface = Queue()
 queueFromProcess   = Queue()
-
 #-----------Fonctions------------------------
 def process(queueFromInterface, queueFromProcess):    
     """Fonction process(queue x, queue y):

@@ -13,8 +13,22 @@ from xml.dom import minidom
 from svgpath2mpl import parse_path
 from math import sqrt
 from queue import Queue
+# systeme
+from time import time, sleep, ctime
+from math import pi
 # test output
 import json
+# debugger
+from icecream import ic
+
+# fonction de log des evenements
+def output_to_file(text):
+    with open("DEBUG_interface.txt", 'a') as f:
+        f.write(text + "\n")
+
+ic.configureOutput(prefix='Debug | ', outputFunction=output_to_file)
+
+ic("-"*60)
 
 
 class MainWindow(Ui_Graphicus03, QMainWindow):
@@ -48,6 +62,9 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
         self.CB_material.addItems(["Plastique", "Vitre", "Métal"])
         for CB_unit in [self.CB_unit_radius, self.CB_unit_Largeur, self.CB_unit_Hauteur]:
             CB_unit.addItems(["cm", "mm", "po"])
+        for DSB_item in [self.DSB_radius, self.DSB_Largeur, self.DSB_Hauteur]:
+            DSB_item.setValue(50)
+        self.fileSelection()
         self.progressBar.setValue(0)
 
     def fileSelection(self):  
@@ -122,15 +139,14 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
             Qt.RoundCap,
             Qt.RoundJoin
             )
+        all_live_point = {}
         for item_ in self.polygonItems:
+            item_. prepareGeometryChange()
             item_.setScale(scale)
             item_.setPos(item_.pos() - QPointF(closest_point[1]*scale, closest_point[2]*scale)) 
             item_.setPen(pen_item)
+            
         self.scene.setSceneRect(0, 0, fartest_point[3]*scale-closest_point[1]*scale, fartest_point[4]*scale-closest_point[2]*scale)
-
-        
-
-        print("fini")
     
     def changeColorItem(self):
         for item in self.polygonItems:
@@ -160,25 +176,76 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
         distance = sqrt(b_rect.x()**2 + b_rect.y()**2)
         return [distance, b_rect.x(), b_rect.y(), b_rect.x()+b_rect.width(), b_rect.y()+b_rect.height()]
 
-    def startExecution(self):
-        step_laser = 0.5        # mm/pas
-        step_angle = 1.8        # degre/pas
-        hauteur = self.DSB_Hauteur.value() # TODO modifier ici pour l'avoir en mm
-        largeur = self.DSB_Largeur.value() # TODO modifier ici pour l'avoir en mm
+    def startExecution(self):   
+        ic()
+        ls_laser = {}
+        for item in self.scene.items():
+            bounding_rec = item.boundingRect()
+            scale = item.scale()
+            print(bounding_rec.x(), bounding_rec.y())
+            
 
+            top     = bounding_rec.topLeft().x() -2
+            left    = bounding_rec.topLeft().y() +2 
+            bot     = bounding_rec.bottomRight().x() -2
+            right   = bounding_rec.bottomRight().y() +2
+
+            precision:int = 1
+            for y in range(int(right - left)*precision):
+                yy = int(y + left)
+                if not ls_laser.__contains__(yy):
+                    ls_laser[yy] = {}
+                for x in range(int(bot - top)*precision):
+                    xx = int(x + top)
+                    if not ls_laser[yy].__contains__(xx):
+                        ls_laser[yy][xx] = False
+                    if item.contains(QPointF(x + top, y + left)):
+                        ls_laser[yy][xx] = not ls_laser[yy][xx]
+        ic(ls_laser)
+        with open("sortie_bounding_rect_met.json", 'w') as f:
+            json.dump(ls_laser, f)
+        ic()
+        print("finis ic")
+
+    def startExecution_precompiled_list(self):
+        t0 = time()
+        self.Laser = QGraphicsRectItem(0.5, 0.5, 0.01, 0.01)
+        self.progressBar.setMaximum(int(self.scene.sceneRect().width()) * int(self.scene.sceneRect().height()))
+        self.scene.addItem(self.Laser)
+        
+        hauteur = self.DSB_Hauteur.value()*10 # TODO modifier ici pour l'avoir en mm
+        largeur = self.DSB_Largeur.value()*10 # TODO modifier ici pour l'avoir en mm
+        rayon   = self.DSB_radius.value()*10  # TODO modifier ici pour l'avoir en mm
+
+        # base values
+        step_laser = 8/200      # mm/pas    - vis sans fin
+        step_angle = 1.8        # degre/pas - sevo moteur
+        step_verre = (pi*rayon*2)* step_angle/360   # mm / pas
+        
         laser_map_in_step = [[]]
 
-        nb_step_laser = int(hauteur/step_laser)
-        nb_step_verre = int(largeur/step_angle)
+        # number of steps in the engraving
+        nb_step_laser = int(hauteur/step_laser)         # mm / (mm / pas)
+        nb_step_verre = int(largeur/(step_verre))       # mm / ()
         
-        for y in range(nb_step_verre):
-            pos_y = step_angle/2 + y*step_angle
-            for x in range(nb_step_laser):
-                pos_x = step_laser/2 + x*step_laser
-                laser_map_in_step[y][x] = self.get_collisions(pos_x, pos_y)
-        print("fini de get la map laser")
+        # size of the steps in pixel
+        pxl_step_laser = self.scene.sceneRect().height()/nb_step_laser
+        pxl_step_verre = self.scene.sceneRect().width()/nb_step_verre
 
-    def startExecution_collision(self):
+        print(step_laser, pxl_step_laser, pxl_step_verre, nb_step_laser*nb_step_verre)
+        for y in range(nb_step_verre):
+            pos_y = pxl_step_verre/2 + y*pxl_step_verre
+            ls_y = []
+            for x in range(nb_step_laser):
+                pos_x = pxl_step_laser/2 + x*pxl_step_laser
+                ls_y.append(self.get_collisions(pos_x, pos_y))
+            laser_map_in_step.append(ls_y)
+        with open("laser_map.json", 'w') as f:
+            json.dump(laser_map_in_step, f, indent=4)
+        print("fini de get la map laser")
+        print("temps pris : ", time() - t0)
+
+    def startExecution_qthread(self):
         """lance le signal dans la Queue pour débuter la gravure et initilise la reception des positions pour graver
         """
         self.Laser = QGraphicsRectItem(0.5, 0.5, 0.01, 0.01)
@@ -257,10 +324,8 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
 
     def get_collisions(self, x, y) -> bool:
         self.Laser.setPos(x, y)
-        collision = 0
-        for item in self.polygonItems:
-            if self.Laser.collidesWithItem(item):
-                collision += 1
+        colliding_items = self.Laser.collidingItems()
+        collision = len(colliding_items)
         return collision % 2 
     
     def get_item_collisions(self, item) -> bool:
