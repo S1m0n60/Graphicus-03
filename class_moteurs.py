@@ -310,7 +310,7 @@ class Moteurs:
         self.queue_out.put("finis")
 
 test = Moteurs()
-while 1:
+while True:
     print(test.is_limit_switch_triggered(1))
 #test.enable_stepper_motor(1)
 #test.enable_stepper_motor(2)
