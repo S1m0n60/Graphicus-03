@@ -4,7 +4,7 @@ import time
 from math import pi
 
 class Moteurs:
-    def __init__(self):
+    def __init__(self, queue_in, queue_out):
         """Initialisation des E/S pour le Raspberry Pi
         """
         super(Moteurs, self).__init__()
@@ -309,7 +309,7 @@ class Moteurs:
         self.move_board_down()
         self.queue_out.put("finis")
 
-test = Moteurs()
+test = Moteurs(1,2)
 while True:
     print(test.is_limit_switch_triggered(1))
 #test.enable_stepper_motor(1)
