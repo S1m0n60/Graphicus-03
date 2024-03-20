@@ -170,14 +170,34 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
     def startExecution(self):
         """lance le signal dans la Queue pour débuter la gravure et initilise la reception des positions pour graver
         """
-        self.Laser = QGraphicsRectItem(0.5, 0.5, 0.01, 0.01)
-        self.progressBar.setMaximum(int(self.scene.sceneRect().width()) * int(self.scene.sceneRect().height()))
-        self.scene.addItem(self.Laser)
+        ls_laser = {}
+        for item in self.scene.items():
+            bounding_rec = item.boundingRect()
+            print(bounding_rec.x(), bounding_rec.y())
+            
 
+            top     = bounding_rec.topLeft().x() -2
+            left    = bounding_rec.topLeft().y() +2 
+            bot     = bounding_rec.bottomRight().x() -2
+            right   = bounding_rec.bottomRight().y() +2
+
+            precision:int = 1
+            for y in range(int(right - left)*precision):
+                yy = int(y + left)
+                if not ls_laser.__contains__(yy):
+                    ls_laser[yy] = {}
+                for x in range(int(bot - top)*precision):
+                    xx = int(x + top)
+                    if not ls_laser[yy].__contains__(xx):
+                        ls_laser[yy][xx] = False
+                    if item.contains(QPointF(x + top, y + left)):
+                        ls_laser[yy][xx] = not ls_laser[yy][xx]
+        
+        print("finis ic")
         print("thread initialise")
 
         self.thread = QThread()
-        self.worker = worker(self.queueIn, self.get_collisions, self.progress_done)
+        self.worker = worker(self.queueIn, ls_laser, self.progress_done)
         self.worker.moveToThread(self.thread)
         # connecter les signaux entre le worker et la thread associé
         self.thread.started.connect(self.worker.run_)
@@ -193,7 +213,6 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
         radius = self.getMesureInmm(self.DSB_radius.value() , self.CB_unit_radius.currentText())
         print(width, height, radius)
         # controle laser
-        GPIO.setmode(GPIO.BCM)
         GPIO.setup(LASER, GPIO.OUT)
         
 
@@ -297,26 +316,27 @@ class worker(QObject):
     def run_(self):
         print("run")
         stop = False
-        result_worker = []
-        while not stop:
-            if not self.queueIn.qsize() == 0:
-                lecture = self.queueIn.get_nowait()
-                if type(lecture) == str:
-                    if lecture == "finis":
-                        self.end_call_func()
-                        stop = True
-                        print("c est FINIS")
-                elif type(lecture) == list:
-                    x = lecture[1]
-                    y = lecture[0]
-                    self._progress.emit((x, y))
+        # result_worker = []
+        # while not stop:
+        #     if not self.queueIn.qsize() == 0:
+        #         lecture = self.queueIn.get_nowait()
+        #         if type(lecture) == str:
+        #             if lecture == "finis":
+        #                 self.end_call_func()
+        #                 stop = True
+        #                 print("c est FINIS")
+        #         elif type(lecture) == list:
+        #             x = lecture[1]
+        #             y = lecture[0]
+        #             self._progress.emit((x, y))
                     
-            else:
-                sleep(0.05)
+        #     else:
+        #         sleep(0.05)
 
-        with open("ouput_test_worker.json", 'w') as f:
-            json.dump(result_worker, f, indent=4)
+        # with open("ouput_test_worker.json", 'w') as f:
+        #     json.dump(result_worker, f, indent=4)
         self.finished.emit()
+
 
 def initWindow(queueOut, queueIn, is_test = False):
     app = QApplication([])
