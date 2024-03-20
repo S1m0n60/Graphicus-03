@@ -16,6 +16,10 @@ from queue import Queue
 # test output
 import json
 from time import sleep
+# controle laser
+import RPi.GPIO as GPIO
+
+LASER = 16
 
 
 class MainWindow(Ui_Graphicus03, QMainWindow):
@@ -188,6 +192,10 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
         height = self.getMesureInmm(self.DSB_Hauteur.value(), self.CB_unit_Hauteur.currentText())
         radius = self.getMesureInmm(self.DSB_radius.value() , self.CB_unit_radius.currentText())
         print(width, height, radius)
+        # controle laser
+        GPIO.setup(LASER, GPIO.OUT, pull_up_down=GPIO.PUD_UP)
+        
+
         sleep(2)
         self.queueOut.put(["debut", width, height, radius])
         print("put done")
@@ -264,6 +272,7 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
         for item in self.polygonItems:
             if self.Laser.collidesWithItem(item):
                 collision += 1
+        GPIO.output(LASER, collision%2)        
         return collision % 2 
     
     def get_item_collisions(self, item) -> bool:
