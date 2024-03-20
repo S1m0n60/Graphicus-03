@@ -244,8 +244,7 @@ class Moteurs:
         """
         motor_id = 2
 
-        self.move_stepper_motor_forward(motor_id, steps=10000, speed=450)
-        #self.move_stepper_motor_forward(motor_id, steps=100, speed=450)
+        self.move_stepper_motor_forward(motor_id, steps=100, speed=450)
 
     def move_board_down(self):
         """Fonction permettant de bouger les moteurs 2 et 3 pas-à-pas en même temps pour faire bouger la plateforme vers le bas
@@ -310,3 +309,9 @@ class Moteurs:
         self.move_board_down()
         self.queue_out.put("finis")
 
+test = Moteurs()
+test.enable_stepper_motor(1)
+test.enable_stepper_motor(2)
+test.enable_stepper_motor(3)
+test.move_stepper_motor_forward(motor_id=1,steps=100,speed=450)
+test.move_board_up()
