@@ -291,7 +291,7 @@ class Moteurs:
         """
         motor_id = 1 
            
-        self.move_stepper_motor_forward(motor_id, steps=1000, speed=450)
+        self.move_stepper_motor_backwards(motor_id, steps=10000, speed=550)
 
         self.stepper_position[0] = 0
 
@@ -300,14 +300,14 @@ class Moteurs:
         """
         motor_id = 2
 
-        self.move_stepper_motor_backwards(motor_id, steps=100, speed=450)
+        self.move_stepper_motor_backwards(motor_id, steps=10000, speed=300)
 
     def move_board_down(self):
         """Fonction permettant de bouger les moteurs 2 et 3 pas-à-pas en même temps pour faire bouger la plateforme vers le bas
         """
         motor_id = 2
 
-        self.move_stepper_motor_forward(motor_id, steps=100, speed=450)
+        self.move_stepper_motor_forward(motor_id, steps=10000, speed=300)
         self.stepper_position[1] = 0
 
     def move_board_to_pos(self):
@@ -336,18 +336,19 @@ class Moteurs:
         # Récupération des paramètres depuis les queues
         #longueur_grav = 10
 
-        longueur_totale = 240
-        position_initiale = (longueur_totale / 2) #+ cst_debut)
+        longueur_totale = 165
+        position_initiale = 30
 
         self.move_stepper_to_distance(motor_id=1, distance=position_initiale, speed=450)
-
+        
         button_press = self.queue_button_start
         if button_press:
             sens = 1
             while self.stepper_position[2]*(pi*self.queue_radius/100) < self.queue_gravx:
                 self.move_stepper_to_distance(motor_id=1, distance=longueur_totale*sens, speed=450)
-                self.move_stepper_motor_forward(motor_id=3, steps=1, speed=450)
+                self.move_stepper_motor_forward(motor_id=3, steps=5, speed=350)
                 sens *= -1
+                time.sleep(0.25)
 
     def read_stepper_position(self):
         """Fonction permettant de mettre les valeurs de positions parcourues en temps réel par le moteur 2 et la position d'angle du moteur 3 dans les files d'attente."""
@@ -368,5 +369,11 @@ test = Moteurs(1,2)
 #while True:
     #print(test.is_limit_switch_triggered(2))
     #time.sleep(0.25)
-test.move_stepper_motor_backwards(motor_id=2,steps=10000,speed=300)
 #test.move_board_up()
+#test.move_stepper_motor_forward(motor_id=3,steps=5,speed=350)
+#test.move_board_up()
+test.laser_go_to_home()
+test.gravure()
+#test.move_board_up()
+#test.move_board_down()
+#test.move_stepper_to_distance(motor_id=1,distance=85,speed=450)
