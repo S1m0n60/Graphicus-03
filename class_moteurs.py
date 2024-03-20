@@ -141,12 +141,14 @@ class Moteurs:
                 start_time = time.time() 
                 step_count += 1 
 
-                #if self.is_limit_switch_triggered(limit_switch_pin1) == 1 or self.is_limit_switch_triggered(limit_switch_pin2) == 1:
-                #return
-
+                if self.is_limit_switch_triggered(limit_switch_pin1) == 1 or self.is_limit_switch_triggered(limit_switch_pin2) == 1 :
+                    while self.is_limit_switch_triggered(limit_switch_pin1) == 1:
+                        self.move_stepper_motor_backwards(motor_id,steps = 1,speed=450)
+                    return
+                
                 self.stepper_position[motor_id - 1] += 1
                 self.read_stepper_position()
-
+            
     def move_stepper_motor_backwards(self, motor_id, steps, speed):
         """Fonction permettant de faire reculer un moteur pas-à-pas selon une vitesse et un nombre de pas spécifié
 
@@ -175,13 +177,16 @@ class Moteurs:
                 coils = coil_sequence[step_count%4]
                 for coil_pin, coil_state in zip(self.get_coil_pins(motor_id), coils):
                     GPIO.output(coil_pin, GPIO.HIGH if coil_state else GPIO.LOW)
+                start_time = time.time() 
+                step_count += 1
 
-                #if self.is_limit_switch_triggered(limit_switch_pin1) == 1 or self.is_limit_switch_triggered(limit_switch_pin2) == 1:
-                #   return
+                if self.is_limit_switch_triggered(limit_switch_pin1) == 1 or self.is_limit_switch_triggered(limit_switch_pin2) == 1:
+                    while self.is_limit_switch_triggered(limit_switch_pin2) == 1:
+                        self.move_stepper_motor_forward(motor_id,steps = 1,speed=450)
+                    return
             
                 self.stepper_position[motor_id - 1] -= 1
                 self.read_stepper_position()
-                # time.sleep(delay_)
     
     def get_coil_pins(self, motor_id):
         """Fonction utilisée dans les fonctions move_stepper_motor_forward et move_stepper_motor_backwards pour retourner les 
@@ -256,8 +261,8 @@ class Moteurs:
         """
         motor_id = 2
         diametre_verre = 2 * self.queue_radius
-        hauteur = 200 ############################
-        distance_focale = 10 #####################
+        hauteur = 170
+        distance_focale = 25 
         position = hauteur - distance_focale - diametre_verre
 
         self.move_stepper_to_distance(motor_id, position, 450)
@@ -272,11 +277,10 @@ class Moteurs:
             queue_radius (float): Rayon récupéré depuis la file d'attente.
         """
         # Récupération des paramètres depuis les queues
-        angle_rotation_intermediaire = self.angle_rotation ##########################
-        cst_debut = 10
+        #longueur_grav = 10
 
-        longueur_totale = 30 ########################
-        position_initiale = ((longueur_totale / 2) + cst_debut)
+        longueur_totale = 240
+        position_initiale = (longueur_totale / 2) #+ cst_debut)
 
         self.move_stepper_to_distance(motor_id=1, distance=position_initiale, speed=450)
 
@@ -284,7 +288,7 @@ class Moteurs:
         if button_press:
             sens = 1
             while self.stepper_position[2]*(pi*self.queue_radius/100) < self.queue_gravx:
-                self.move_stepper_to_distance(motor_id=1, distance=cst_debut*sens, speed=450)
+                self.move_stepper_to_distance(motor_id=1, distance=longueur_totale*sens, speed=450)
                 self.move_stepper_motor_forward(motor_id=3, steps=1, speed=450)
                 sens *= -1
                 
