@@ -53,8 +53,8 @@ class Moteurs:
                  1 - capteur de fin de course actif
         """
         readings = []
-        for _ in range (3):
-            readings.append(GPIO.input(switch_id-1))
+        for _ in range (10):
+            readings.append(GPIO.input(self.limit_switch_pins[switch_id-1]))
         return all(readings)
     
     def enable_stepper_motor(self, motor_id):
@@ -366,7 +366,7 @@ class Moteurs:
 
 test = Moteurs(1,2)
 #while True:
- #   print(test.is_limit_switch_triggered(2))
-  #  time.sleep(0.25)
-test.move_stepper_motor_forward(motor_id=1,steps=100,speed=450)
+    #print(test.is_limit_switch_triggered(2))
+    #time.sleep(0.25)
+test.move_stepper_motor_backwards(motor_id=1,steps=10000,speed=450)
 #test.move_board_up()
