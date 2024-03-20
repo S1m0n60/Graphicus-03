@@ -40,8 +40,8 @@ class Moteurs:
         self.enable_stepper_motor(1)
         self.enable_stepper_motor(2)
         self.enable_stepper_motor(3)
-        #self.laser_go_to_home()
-        #self.move_board_down()
+        self.laser_go_to_home()
+        self.move_board_down()
 
     def is_limit_switch_triggered(self, switch_id):
         """Fonction pour vérifier si un des capteurs de fin de course est activé
@@ -365,15 +365,15 @@ class Moteurs:
         self.move_board_down()
         self.queue_out.put("finis")
 
-test = Moteurs(1,2)
+#test = Moteurs(1,2)
 #while True:
     #print(test.is_limit_switch_triggered(2))
     #time.sleep(0.25)
 #test.move_board_up()
 #test.move_stepper_motor_forward(motor_id=3,steps=5,speed=350)
 #test.move_board_up()
-test.laser_go_to_home()
-test.gravure()
+#test.laser_go_to_home()
+#test.gravure()
 #test.move_board_up()
 #test.move_board_down()
 #test.move_stepper_to_distance(motor_id=1,distance=85,speed=450)
