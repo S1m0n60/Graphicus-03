@@ -35,6 +35,7 @@ class Moteurs:
         self.queue_gravx = 0
         self.queue_gravy = 0
         self.queue_radius = 0
+        self.no_limit3 = 0
 
         self.enable_stepper_motor(1)
         self.enable_stepper_motor(2)
@@ -54,7 +55,8 @@ class Moteurs:
         """
         readings = []
         for _ in range (3):
-            readings.append(GPIO.input(switch_id-1))
+            readings.append(GPIO.input(self.limit_switch_pins[switch_id-1]))
+        print(all(readings))
         return all(readings)
     
     def enable_stepper_motor(self, motor_id):
@@ -123,11 +125,11 @@ class Moteurs:
             speed = 525
 
         if motor_id == 1:
-            limit_switch_pin1 = 1
             limit_switch_pin2 = 2
         elif motor_id == 2:
-            limit_switch_pin1 = 3
             limit_switch_pin2 = 4
+        elif motor_id == 3:
+            limit_switch_pin2 = self.no_limit3
         
         coil_sequence = [(1, 0, 1, 0), (0, 1, 1, 0), (0, 1, 0, 1), (1, 0, 0, 1)]
         delay_ = 1.0 / speed
@@ -166,10 +168,10 @@ class Moteurs:
             
         if motor_id == 1:
             limit_switch_pin1 = 1
-            limit_switch_pin2 = 2
         elif motor_id == 2:
             limit_switch_pin1 = 3
-            limit_switch_pin2 = 4
+        elif motor_id == 3:
+            limit_switch_pin1 = self.no_limit3
         
         coil_sequence = [(1, 0, 0, 1), (0, 1, 0, 1), (0, 1, 1, 0), (1, 0, 1, 0)]
         delay_ = 1.0 / speed
@@ -299,15 +301,14 @@ class Moteurs:
         """
         motor_id = 2
 
-        self.move_stepper_motor_forward(motor_id, steps=100, speed=450)
+        self.move_stepper_motor_backwards(motor_id, steps=100, speed=450)
 
     def move_board_down(self):
         """Fonction permettant de bouger les moteurs 2 et 3 pas-à-pas en même temps pour faire bouger la plateforme vers le bas
         """
         motor_id = 2
 
-        self.move_stepper_motor_backwards(motor_id, steps=10000, speed=450)
-        #self.move_stepper_motor_backwards(motor_id, steps=100, speed=450)
+        self.move_stepper_motor_forward(motor_id, steps=100, speed=450)
         self.stepper_position[1] = 0
 
     def move_board_to_pos(self):
