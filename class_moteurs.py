@@ -368,5 +368,5 @@ test = Moteurs(1,2)
 #while True:
     #print(test.is_limit_switch_triggered(2))
     #time.sleep(0.25)
-test.move_stepper_motor_backwards(motor_id=2,steps=100,speed=450)
+test.move_stepper_motor_backwards(motor_id=2,steps=10000,speed=300)
 #test.move_board_up()
