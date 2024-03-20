@@ -55,7 +55,7 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
             CB_unit.addItems(["cm", "mm", "po"])
         self.progressBar.setValue(0)
         for DSB_item in [self.DSB_Hauteur, self.DSB_Largeur, self.DSB_radius]:
-            DSB_item.setValue(25)
+            DSB_item.setValue(5)
 
     def fileSelection(self):  
         """Ouvre l'exploreur de fichier pour selectionner un SVG
