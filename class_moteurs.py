@@ -126,7 +126,7 @@ class Moteurs:
         if motor_id == 1:
             limit_switch_pin2 = 2
         elif motor_id == 2:
-            limit_switch_pin2 = 4
+            limit_switch_pin2 = 3
         elif motor_id == 3:
             limit_switch_pin2 = self.no_limit3
         
@@ -168,7 +168,7 @@ class Moteurs:
         if motor_id == 1:
             limit_switch_pin1 = 1
         elif motor_id == 2:
-            limit_switch_pin1 = 3
+            limit_switch_pin1 = 4
         elif motor_id == 3:
             limit_switch_pin1 = self.no_limit3
         
