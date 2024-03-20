@@ -288,21 +288,21 @@ class worker(QObject):
         print("run")
         stop = False
         # result_worker = []
-        while not stop:
-            if not self.queueIn.qsize() == 0:
-                lecture = self.queueIn.get_nowait()
-                if type(lecture) == str:
-                    if lecture == "finis":
-                        self.end_call_func()
-                        stop = True
-                        print("c est FINIS")
-                elif type(lecture) == list:
-                    x = lecture[1]
-                    y = lecture[0]
-                    self._progress.emit((x, y))
+        # while not stop:
+        #     if not self.queueIn.qsize() == 0:
+        #         lecture = self.queueIn.get_nowait()
+        #         if type(lecture) == str:
+        #             if lecture == "finis":
+        #                 self.end_call_func()
+        #                 stop = True
+        #                 print("c est FINIS")
+        #         elif type(lecture) == list:
+        #             x = lecture[1]
+        #             y = lecture[0]
+        #             self._progress.emit((x, y))
                     
-            else:
-                sleep(0.05)
+        #     else:
+        #         sleep(0.05)
 
         # with open("ouput_test_worker.json", 'w') as f:
         #     json.dump(result_worker, f, indent=4)
