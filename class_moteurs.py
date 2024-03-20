@@ -42,9 +42,7 @@ class Moteurs:
         self.enable_stepper_motor(2)
         self.enable_stepper_motor(3)
         self.laser_go_to_home()
-        print("went_home")
         self.move_board_down()
-        print("49 - board down")
 
     def is_limit_switch_triggered(self, switch_id):
         """Fonction pour vérifier si un des capteurs de fin de course est activé
