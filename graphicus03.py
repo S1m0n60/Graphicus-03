@@ -34,6 +34,7 @@ def process(queueFromInterface, queueFromProcess):
             queueFromProcess.put([i, y])
             time.sleep(0.0001)
     queueFromProcess.put("finis")
+    time.sleep(15)
     return
 
 def interface(queueFromInterface, queueFromProcess):

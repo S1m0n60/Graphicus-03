@@ -361,12 +361,12 @@ class worker(QObject):
                     y = lecture[1]
                     res_y = self.ls_laser.get(y) or self.ls_laser[min(self.ls_laser.keys(), key = lambda key: abs(key-y))]
                     res_x = res_y.get(x) or res_y[min(res_y.keys(), key = lambda key: abs(key-x))]
-                    result_worker.append(res_x)
-                    print(x, y)
+                    result_worker.append([x, y, res_x]) 
                     self._progress.emit((x, y))
         ic(" ")
-        with open("ouput_test_worker.json", 'w') as f:
-            json.dump(result_worker, f, indent=4)
+        with open("ouput_test_worker.txt", 'w') as f:
+            f.write(result_worker)
+        sleep(5)
         self.finished.emit()
 
 def initWindow(queueOut, queueIn, is_test = False):
