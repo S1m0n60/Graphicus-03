@@ -317,12 +317,13 @@ class Moteurs:
             queue_radius (float): Rayon récupéré depuis la file d'attente.
         """
         motor_id = 2
-        diametre_verre = 2 * self.queue_radius
-        hauteur = 100
+        diametre_verre = self.queue_radius
+        #print(self.queue_radius)
+        hauteur = 150
         distance_focale = 25 
-        position = hauteur - distance_focale - diametre_verre
+        position = (hauteur - distance_focale - diametre_verre)*-1
 
-        self.move_stepper_to_distance(motor_id, -position, 450)
+        self.move_stepper_to_distance(motor_id, position, 300)
    
     def gravure(self):
         """Fonction de séquence de gravure du verre
@@ -365,11 +366,11 @@ class Moteurs:
         self.move_board_down()
         self.queue_out.put("finis")
 
-# test = Moteurs(1,2)
+#test = Moteurs(1,2)
 #while True:
     #print(test.is_limit_switch_triggered(2))
     #time.sleep(0.25)
-# test.move_board_up()
+#test.move_board_up()
 #test.move_stepper_motor_forward(motor_id=3,steps=5,speed=350)
 #test.move_board_down()
 #test.laser_go_to_home()
@@ -377,3 +378,4 @@ class Moteurs:
 #test.move_board_up()
 #test.move_board_down()
 #test.move_stepper_to_distance(motor_id=1,distance=85,speed=450)
+#test.move_board_to_pos()
