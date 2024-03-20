@@ -194,7 +194,6 @@ class Moteurs:
                 self.stepper_position[motor_id - 1] -= 1
                 if self.queue_button_start:
                     self.read_stepper_position()
-                start_time = time.time()
 
     def get_coil_pins(self, motor_id):
         """Fonction utilisée dans les fonctions move_stepper_motor_forward et move_stepper_motor_backwards pour retourner les 
@@ -250,16 +249,17 @@ class Moteurs:
         """
         motor_id = 2
 
-        # self.move_stepper_motor_forward(motor_id, steps=10000, speed=450)
-        self.move_stepper_motor_forward(motor_id, steps=100, speed=450)
+        self.move_stepper_motor_forward(motor_id, steps=10000, speed=450)
+        #self.move_stepper_motor_forward(motor_id, steps=100, speed=450)
 
     def move_board_down(self):
         """Fonction permettant de bouger les moteurs 2 et 3 pas-à-pas en même temps pour faire bouger la plateforme vers le bas
         """
         motor_id = 2
 
-        # self.move_stepper_motor_backwards(motor_id, steps=10000, speed=450)
-        self.move_stepper_motor_backwards(motor_id, steps=100, speed=450)
+        self.move_stepper_motor_backwards(motor_id, steps=10000, speed=450)
+        #self.move_stepper_motor_backwards(motor_id, steps=100, speed=450)
+        self.stepper_position[1] = 0
 
     def move_board_to_pos(self):
         """Fonction permettant de bouger le plateau a la position de depart
@@ -309,7 +309,7 @@ class Moteurs:
         self.queue_out.put([stepper_position, angle_position])
 
     def sequence(self):
-        # self.move_board_to_pos()
+        self.move_board_to_pos()
         self.gravure()
         self.laser_go_to_home()
         self.move_board_down()
