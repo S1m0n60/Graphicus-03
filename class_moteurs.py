@@ -10,6 +10,7 @@ class Moteurs:
     def __init__(self, queue_in, queue_out):
         """Initialisation des E/S pour le Raspberry Pi
         """
+        super(Moteurs, self).__init__()
         # Init stepper
         self.enable_pin1, self.coil_A1, self.coil_B1, self.coil_C1, self.coil_D1 = 1,23,20,22,12 # Moteur laser
         self.enable_pin2, self.coil_A2, self.coil_B2, self.coil_C2, self.coil_D2 = 1, 4,13,27,21 # Moteurs plateau
@@ -41,7 +42,9 @@ class Moteurs:
         self.enable_stepper_motor(2)
         self.enable_stepper_motor(3)
         self.laser_go_to_home()
+        print("went_home")
         self.move_board_down()
+        print("49 - board down")
 
     def is_limit_switch_triggered(self, switch_id):
         """Fonction pour vérifier si un des capteurs de fin de course est activé
@@ -130,7 +133,8 @@ class Moteurs:
         coil_sequence = [(1, 0, 1, 0), (0, 1, 1, 0), (0, 1, 0, 1), (1, 0, 0, 1)]
         delay_ = 1.0 / speed
         step_count = 0
-
+        start_time = time.time() 
+        
         while step_count < steps:    
             elapsed_time = time.time() - start_time
             
@@ -147,7 +151,8 @@ class Moteurs:
                     return
                 
                 self.stepper_position[motor_id - 1] += 1
-                self.read_stepper_position()
+                if self.queue_button_start:
+                    self.read_stepper_position()
             
     def move_stepper_motor_backwards(self, motor_id, steps, speed):
         """Fonction permettant de faire reculer un moteur pas-à-pas selon une vitesse et un nombre de pas spécifié
@@ -170,6 +175,7 @@ class Moteurs:
         coil_sequence = [(1, 0, 0, 1), (0, 1, 0, 1), (0, 1, 1, 0), (1, 0, 1, 0)]
         delay_ = 1.0 / speed
         step_count = 0
+        start_time = time.time() 
 
         while step_count < steps:  
             elapsed_time = time.time() - start_time
@@ -186,8 +192,10 @@ class Moteurs:
                     return
             
                 self.stepper_position[motor_id - 1] -= 1
-                self.read_stepper_position()
-    
+                if self.queue_button_start:
+                    self.read_stepper_position()
+                start_time = time.time()
+
     def get_coil_pins(self, motor_id):
         """Fonction utilisée dans les fonctions move_stepper_motor_forward et move_stepper_motor_backwards pour retourner les 
            pins du moteur spécifié
@@ -291,7 +299,7 @@ class Moteurs:
                 self.move_stepper_to_distance(motor_id=1, distance=longueur_totale*sens, speed=450)
                 self.move_stepper_motor_forward(motor_id=3, steps=1, speed=450)
                 sens *= -1
-                
+
     def read_stepper_position(self):
         """Fonction permettant de mettre les valeurs de positions parcourues en temps réel par le moteur 2 et la position d'angle du moteur 3 dans les files d'attente."""
         
@@ -305,5 +313,5 @@ class Moteurs:
         self.gravure()
         self.laser_go_to_home()
         self.move_board_down()
-        # self.queue_out.put("finis")
+        self.queue_out.put("finis")
 
