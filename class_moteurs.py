@@ -2,6 +2,7 @@ from queue import Queue
 import RPi.GPIO as GPIO
 import time
 from math import pi
+from icecream import ic
 
 class Moteurs:
     def __init__(self, queue_in, queue_out):
@@ -140,9 +141,9 @@ class Moteurs:
                 start_time = time.time() 
                 step_count += 1 
 
-                if self.is_limit_switch_triggered(limit_switch_pin1) == 1 or self.is_limit_switch_triggered(limit_switch_pin2) == 1 :
+                if self.is_limit_switch_triggered(limit_switch_pin2) == 1 :
                     while self.is_limit_switch_triggered(limit_switch_pin2) == 1:
-                        self.move_stepper_motor_backwards_nosafe(motor_id,steps = 1,speed=450)
+                        self.move_stepper_motor_backwards_nosafe(motor_id,steps = 10,speed=450)
                     return
                 
                 self.stepper_position[motor_id - 1] += 1
@@ -181,7 +182,7 @@ class Moteurs:
                 start_time = time.time() 
                 step_count += 1
 
-                if self.is_limit_switch_triggered(limit_switch_pin1) == 1 or self.is_limit_switch_triggered(limit_switch_pin2) == 1:
+                if self.is_limit_switch_triggered(limit_switch_pin1) == 1:
                     while self.is_limit_switch_triggered(limit_switch_pin1) == 1:
                         self.move_stepper_motor_forward_nosafe(motor_id,steps = 10,speed=450)
                     return
