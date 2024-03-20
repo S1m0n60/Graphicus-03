@@ -142,7 +142,7 @@ class Moteurs:
 
                 if self.is_limit_switch_triggered(limit_switch_pin1) == 1 or self.is_limit_switch_triggered(limit_switch_pin2) == 1 :
                     while self.is_limit_switch_triggered(limit_switch_pin1) == 1:
-                        self.move_stepper_motor_backwards(motor_id,steps = 1,speed=450)
+                        self.move_stepper_motor_backwards_nosafe(motor_id,steps = 1,speed=450)
                     return
                 
                 self.stepper_position[motor_id - 1] += 1
@@ -183,12 +183,63 @@ class Moteurs:
 
                 if self.is_limit_switch_triggered(limit_switch_pin1) == 1 or self.is_limit_switch_triggered(limit_switch_pin2) == 1:
                     while self.is_limit_switch_triggered(limit_switch_pin2) == 1:
-                        self.move_stepper_motor_forward(motor_id,steps = 1,speed=450)
+                        self.move_stepper_motor_forward_nosafe(motor_id,steps = 10,speed=450)
                     return
             
                 self.stepper_position[motor_id - 1] -= 1
                 if self.queue_button_start:
                     self.read_stepper_position()
+
+    def move_stepper_motor_forward_nosafe(self, motor_id, steps, speed):
+        """Fonction permettant de faire avancer un moteur pas-à-pas selon une vitesse et un nombre de pas spécifié
+
+        Args:
+            motor_id (int): Identifiant du moteur pas-à-pas (1-3)
+            steps (int): Nombre de pas désiré
+            speed (float): Vitesse du moteur désirée (0-1000)
+        """
+        if speed > 525:
+            speed = 525
+        
+        coil_sequence = [(1, 0, 1, 0), (0, 1, 1, 0), (0, 1, 0, 1), (1, 0, 0, 1)]
+        delay_ = 1.0 / speed
+        step_count = 0
+        start_time = time.time() 
+        
+        while step_count < steps:    
+            elapsed_time = time.time() - start_time
+            
+            if elapsed_time >= delay_:
+                coils = coil_sequence[step_count%4]
+                for coil_pin, coil_state in zip(self.get_coil_pins(motor_id), coils):
+                    GPIO.output(coil_pin, GPIO.HIGH if coil_state else GPIO.LOW)
+                start_time = time.time() 
+                step_count += 1 
+
+    def move_stepper_motor_backwards_nosafe(self, motor_id, steps, speed):
+        """Fonction permettant de faire reculer un moteur pas-à-pas selon une vitesse et un nombre de pas spécifié
+
+        Args:
+            motor_id (int): Identifiant du moteur pas-à-pas (1-3)
+            steps (int): Nombre de pas désiré
+            speed (float): Vitesse du moteur désirée (0-1000)
+        """
+        if speed > 525:
+            speed = 525
+
+        coil_sequence = [(1, 0, 0, 1), (0, 1, 0, 1), (0, 1, 1, 0), (1, 0, 1, 0)]
+        delay_ = 1.0 / speed
+        step_count = 0
+        start_time = time.time() 
+
+        while step_count < steps:  
+            elapsed_time = time.time() - start_time
+            if elapsed_time >= delay_:
+                coils = coil_sequence[step_count%4]
+                for coil_pin, coil_state in zip(self.get_coil_pins(motor_id), coils):
+                    GPIO.output(coil_pin, GPIO.HIGH if coil_state else GPIO.LOW)
+                start_time = time.time() 
+                step_count += 1
 
     def get_coil_pins(self, motor_id):
         """Fonction utilisée dans les fonctions move_stepper_motor_forward et move_stepper_motor_backwards pour retourner les 
