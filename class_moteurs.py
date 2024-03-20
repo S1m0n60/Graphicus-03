@@ -4,7 +4,7 @@ import time
 from math import pi
 
 class Moteurs:
-    def __init__(self, queue_in, queue_out):
+    def __init__(self):
         """Initialisation des E/S pour le Raspberry Pi
         """
         super(Moteurs, self).__init__()
