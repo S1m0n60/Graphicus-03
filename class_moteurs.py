@@ -310,8 +310,10 @@ class Moteurs:
         self.queue_out.put("finis")
 
 test = Moteurs()
-test.enable_stepper_motor(1)
-test.enable_stepper_motor(2)
-test.enable_stepper_motor(3)
-test.move_stepper_motor_forward(motor_id=1,steps=100,speed=450)
-test.move_board_up()
+while 1:
+    print(test.is_limit_switch_triggered(1))
+#test.enable_stepper_motor(1)
+#test.enable_stepper_motor(2)
+#test.enable_stepper_motor(3)
+#test.move_stepper_motor_forward(motor_id=1,steps=100,speed=450)
+#test.move_board_up()
