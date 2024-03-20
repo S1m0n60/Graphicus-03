@@ -181,7 +181,6 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
         ls_laser = {}
         for item in self.scene.items():
             bounding_rec = item.boundingRect()
-            scale = item.scale()
             print(bounding_rec.x(), bounding_rec.y())
             
 
@@ -205,6 +204,8 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
         with open("sortie_bounding_rect_met.json", 'w') as f:
             json.dump(ls_laser, f)
         ic()
+        self.ls_laser = ls_laser
+        self.startExecution_qthread()
         print("finis ic")
 
     def startExecution_precompiled_list(self):
@@ -248,14 +249,12 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
     def startExecution_qthread(self):
         """lance le signal dans la Queue pour débuter la gravure et initilise la reception des positions pour graver
         """
-        self.Laser = QGraphicsRectItem(0.5, 0.5, 0.01, 0.01)
         self.progressBar.setMaximum(int(self.scene.sceneRect().width()) * int(self.scene.sceneRect().height()))
-        self.scene.addItem(self.Laser)
 
         print("thread initialise")
 
         self.thread = QThread()
-        self.worker = worker(self.queueIn, self.get_collisions, self.progress_done)
+        self.worker = worker(self.queueIn, self.ls_laser, self.progress_done)
         self.worker.moveToThread(self.thread)
         # connecter les signaux entre le worker et la thread associé
         self.thread.started.connect(self.worker.run)
@@ -339,11 +338,12 @@ class worker(QObject):
     finished = Signal()
     _progress = Signal(tuple)
 
-    def __init__(self, queueIn:Queue, target_func, end_call_func):
+    def __init__(self, queueIn:Queue, ls_laser, end_call_func):
         super().__init__()
         self.queueIn = queueIn
-        self.callback = target_func
+        self.ls_laser = ls_laser
         self.end_call_func = end_call_func
+        print("starter")
 
     def run(self):
         print("run")
@@ -359,12 +359,12 @@ class worker(QObject):
                 elif type(lecture) == list:
                     x = lecture[0]
                     y = lecture[1]
-                    collision = self.callback(x, y)
-                    if collision:
-                        # self.queueIn.mutex.acquire()
-                        result_worker.append(lecture)
-                        # self.queueIn.mutex.release()
-                        self._progress.emit((x, y))
+                    res_y = self.ls_laser.get(y) or self.ls_laser[min(self.ls_laser.keys(), key = lambda key: abs(key-y))]
+                    res_x = res_y.get(x) or res_y[min(res_y.keys(), key = lambda key: abs(key-x))]
+                    result_worker.append(res_x)
+                    print(x, y)
+                    self._progress.emit((x, y))
+        ic(" ")
         with open("ouput_test_worker.json", 'w') as f:
             json.dump(result_worker, f, indent=4)
         self.finished.emit()
