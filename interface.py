@@ -195,8 +195,8 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
         
         print("finis ic")
         print("thread initialise")
-        rapport_h = self.scene.itemsBoundingRect.y()/self.DSB_Hauteur.value()
-        rapport_l = self.scene.itemsBoundingRect.x()/self.DSB_Largeur.value()
+        rapport_h = self.scene.itemsBoundingRect().x()/(self.DSB_Hauteur.value()*10)
+        rapport_l = self.scene.itemsBoundingRect().y()/(self.DSB_Largeur.value()*10)
 
         self.thread = QThread()
         self.worker = worker(self.queueIn, ls_laser, self.progress_done, rapport_h, rapport_l)
@@ -323,12 +323,14 @@ class worker(QObject):
         result_worker = []
         while not stop:
             if not self.queueIn.empty():
+                # TODO : mutex
                 lecture = self.queueIn.get_nowait()
                 if type(lecture) == str:
                     if lecture == "finis":
                         self.end_call_func()
                         stop = True
                 elif type(lecture) == list:
+                    print(f"ici {lecture[0], lecture[1]}")
                     x = lecture[0]*self.rH
                     y = lecture[1]*self.rL
                     res_y = self.ls_laser.get(y) or self.ls_laser[min(self.ls_laser.keys(), key = lambda key: abs(key-y))]

@@ -356,7 +356,7 @@ class Moteurs:
         
         stepper_position = (self.stepper_position[0]/0.125/(360/1.8))
         angle_position = self.stepper_position[2]*(pi*self.queue_radius/100)
-
+        # TODO : ajout de mutex
         self.queue_out.put([stepper_position, angle_position])
 
     def sequence(self):
