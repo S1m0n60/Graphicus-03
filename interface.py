@@ -331,6 +331,8 @@ class worker(QObject):
                     res_x = res_y.get(x) or res_y[min(res_y.keys(), key = lambda key: abs(key-x))]
                     GPIO.output(LASER, res_x)
                     self._progress.emit((x, y))
+                    # capture
+                    
         
         sleep(5)
         self.finished.emit()
