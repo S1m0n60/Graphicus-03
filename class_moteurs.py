@@ -53,7 +53,7 @@ class Moteurs:
                  1 - capteur de fin de course actif
         """
         readings = [GPIO.input(pin) for pin in self.limit_switch_pins[switch_id-1]]
-        return all(readings[-3:])
+        return 1 if all(readings[-3:]) else 0
     
     def enable_stepper_motor(self, motor_id):
         """Fonction permettant d'activer un des moteurs pas-à-pas
