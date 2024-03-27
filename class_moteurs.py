@@ -4,7 +4,7 @@ import time
 from math import pi
 
 class Moteurs:
-    def __init__(self, queue_in, queue_out):
+    def __init__(self, queue_in : Queue, queue_out : Queue):
         """Initialisation de l'objet moteur, initialisation des entrées/sorties du Raspberry Pi,
         appel des fonctions de calibration de la machine.
 
@@ -348,8 +348,9 @@ class Moteurs:
         """
         stepper_position = (self.stepper_position[0]/0.125/(360/1.8))
         angle_position = self.stepper_position[2]*(pi*self.queue_radius/100)
-        # TODO : ajout de mutex
+        self.queue_out.mutex.acquire()
         self.queue_out.put([stepper_position, angle_position])
+        self.queue_out.mutex.release()
 
     def sequence(self):
         """Fonction permettant l'exécution complète du programme
