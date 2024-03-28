@@ -27,11 +27,11 @@ def motor3(moteurs):
         moteurs.move_stepper_motor_forward(3,500,250)
         moteurs.move_stepper_motor_backwards(3,500,250)
         time.sleep(0.05)
-        
+
 #-----------Creation de thread----------------
-motor1Thread = Thread(target=motor1, args=moteurs)
-motor2Thread = Thread(target=motor2, args=moteurs)
-motor3Thread = Thread(target=motor3, args=moteurs)
+motor1Thread = Thread(target=motor1, args=[moteurs])
+motor2Thread = Thread(target=motor2, args=[moteurs])
+motor3Thread = Thread(target=motor3, args=[moteurs])
 
 #------------Execution----------
 motor1Thread.start()
