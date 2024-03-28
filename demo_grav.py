@@ -10,14 +10,18 @@ moteurs = Moteurs(1,1)
 def motor1(moteurs):    
 
     while True:
-        moteurs.move_stepper_motor_forward(1,10000,450)
-        moteurs.move_stepper_motor_backwards(1,10000,450)
+        moteurs.move_stepper_motor_forward(1,200,200)
+        moteurs.move_stepper_motor_forward(1,10000,550)
+        moteurs.move_stepper_motor_backwards(1,400,450)
+        moteurs.move_stepper_motor_backwards(1,10000,350)
         time.sleep(0.05)
 
 def motor3(moteurs):
 
     while True:
-        moteurs.move_stepper_motor_forward(3,500,250)
+        moteurs.move_stepper_motor_forward(3,500,75)
+        moteurs.move_stepper_motor_forward(3,500,350)
+        moteurs.move_stepper_motor_backwards(3,500,75)
         moteurs.move_stepper_motor_backwards(3,500,250)
         time.sleep(0.05)
 
