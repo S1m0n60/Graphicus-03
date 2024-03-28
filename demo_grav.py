@@ -1,7 +1,5 @@
-import sys
 import time
 from threading import Thread
-from queue import Queue
 from class_moteurs import Moteurs
 
 moteurs = Moteurs(1,1)
