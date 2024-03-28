@@ -14,13 +14,6 @@ def motor1(moteurs):
         moteurs.move_stepper_motor_backwards(1,1000,450)
         time.sleep(0.05)
 
-def motor2(moteurs):
-
-    while True:
-        moteurs.move_board_up()
-        moteurs.move_board_down()
-        time.sleep(0.05)
-
 def motor3(moteurs):
 
     while True:
@@ -30,13 +23,10 @@ def motor3(moteurs):
 
 #-----------Creation de thread----------------
 motor1Thread = Thread(target=motor1, args=[moteurs])
-motor2Thread = Thread(target=motor2, args=[moteurs])
 motor3Thread = Thread(target=motor3, args=[moteurs])
 
 #------------Execution----------
 motor1Thread.start()
-motor2Thread.start()
 motor3Thread.start()
 motor1Thread.join()
-motor2Thread.join()
 motor3Thread.join()
