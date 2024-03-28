@@ -2,7 +2,7 @@ import sys
 import time
 from threading import Thread
 from queue import Queue
-from class_moteurs import Moteurs
+from moteurs import Moteurs
 from interface import initWindow
 
 
@@ -16,6 +16,9 @@ def process(queueFromInterface, queueFromProcess):
         La fonction contrôle les entrées et sorties du raspberry PI.
     """
     moteurs = Moteurs(queueFromInterface, queueFromProcess)
+    # time.sleep(2)
+    # moteurs.move_stepper_motor_forward(3, 50, 350)
+    # time.sleep(2)
     stop = False
     while not stop:
         if not queueFromInterface.qsize() == 0:
