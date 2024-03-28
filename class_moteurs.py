@@ -328,7 +328,7 @@ class Moteurs:
         du message de début de l'interface, et se termine lorsque la position actuelle est
         plus grande que la position finale calculée
         """
-        longueur_totale = 165
+        longueur_totale = 115
         position_initiale = 30
 
         self.move_stepper_to_distance(motor_id=1, distance=position_initiale, speed=450)
@@ -355,7 +355,7 @@ class Moteurs:
     def sequence(self):
         """Fonction permettant l'exécution complète du programme
         """
-        self.move_board_to_pos()
+        self.move_board_up()
         self.gravure()
         self.laser_go_to_home()
         self.move_board_down()
