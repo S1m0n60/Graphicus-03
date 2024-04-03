@@ -16,7 +16,7 @@ def process(queueFromInterface, queueFromProcess):
     """
     moteurs = Moteurs(queueFromInterface, queueFromProcess)
     # time.sleep(2)
-    # moteurs.move_stepper_motor_forward(3, 50, 350)
+    # moteurs.move_stepper_motor_backwards(1, 250, 350)
     # time.sleep(2)
     stop = False
     while not stop:
