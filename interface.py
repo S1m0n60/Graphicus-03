@@ -118,6 +118,7 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
         scale = scale_to_img_x/2
         if scale_to_img_y < scale_to_img_x:
             scale = scale_to_img_y/2
+        self.scale_pic = scale
         # déplace tous les items vers l'origine avec le décalage calculé précédement        
         pen_item = QPen(
             Qt.black,
@@ -131,7 +132,9 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
             item_.setPos(item_.pos() - QPointF(closest_point[1]*scale, closest_point[2]*scale)) 
             item_.setPen(pen_item)
         self.scene.setSceneRect(0, 0, fartest_point[3]*scale-closest_point[1]*scale, fartest_point[4]*scale-closest_point[2]*scale)
-
+        self.x_offset = closest_point[0]
+        self.y_offset = closest_point[1]
+        
         
 
         print("fini")

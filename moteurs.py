@@ -39,7 +39,7 @@ class Moteurs:
         GPIO.setup((self.enable_pin1, self.coil_A1, self.coil_B1, self.coil_C1, self.coil_D1), GPIO.OUT, initial=GPIO.LOW)
         GPIO.setup((self.enable_pin2, self.coil_A2, self.coil_B2, self.coil_C2, self.coil_D2), GPIO.OUT, initial=GPIO.LOW)
         GPIO.setup((self.enable_pin3, self.coil_A3, self.coil_B3, self.coil_C3, self.coil_D3), GPIO.OUT, initial=GPIO.LOW)
-
+        GPIO.setup(self.LASER_pin, GPIO.OUT, initial=GPIO.LOW)
         self.limit_switch_pins = [24,25,5,6]  
         GPIO.setup(self.limit_switch_pins, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
@@ -375,7 +375,7 @@ class Moteurs:
         #     self.sent_last_time = time.time()
         stepper_position = (self.stepper_position[0]/0.125/(360/1.8))
         angle_position = self.stepper_position[2]*(pi*self.queue_radius/100)
-        res_y = self.ls_laser.get(angle_position) or self.ls_laser[min(self.ls_laser.keys(), key = lambda key: abs(key-angle_position))]
+        res_y = self.laser_control.get(angle_position) or self.laser_control[min(self.laser_control.keys(), key = lambda key: abs(key-angle_position))]
         res_x = res_y.get(stepper_position) or res_y[min(res_y.keys(), key = lambda key: abs(key-stepper_position))]
         GPIO.output(self.LASER_pin, res_x)
 
