@@ -175,6 +175,10 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
         max_y = 0
         min_x = []
         min_y = []
+        width  = self.getMesureInmm(self.DSB_Largeur.value(), self.CB_unit_Largeur.currentText())
+        height = self.getMesureInmm(self.DSB_Hauteur.value(), self.CB_unit_Hauteur.currentText())
+        radius = self.getMesureInmm(self.DSB_radius.value() , self.CB_unit_radius.currentText())
+        
         for item in self.scene.items():
             bounding_rec = item.boundingRect()  
             delta = 10          
@@ -216,13 +220,16 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
             value = ls_laser[key]
             new_value = {}
             for value_key in value.keys():
-                new_value[(value_key - min_value - delta/2)/length_x] = value[value_key]
-            new_ls_laser[(int(key) - min_key - delta/2)/length_y] = new_value
+                new_value[width*(value_key - min_value - delta/2)/length_x] = value[value_key]
+            new_ls_laser[height*(int(key) - min_key - delta/2)/length_y] = new_value
         with open("sortie_bounding_rect_met.json", 'w') as f:
-            json.dump(new_ls_laser, f)
+            json.dump(new_ls_laser, f, indent=4)
         self.ls_laser = new_ls_laser
         self.startExecution_qthread()
         print("finis ic")
+        sleep(2)
+        self.queueOut.put(["debut", width, height, radius, self.ls_laser])
+        print("put done")
 
     def startExecution_qthread(self):
         """lance le signal dans la Queue pour débuter la gravure et initilise la reception des positions pour graver
@@ -243,15 +250,8 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
         # # start the thread
         # self.thread.start()
 
-        width  = self.getMesureInmm(self.DSB_Largeur.value(), self.CB_unit_Largeur.currentText())
-        height = self.getMesureInmm(self.DSB_Hauteur.value(), self.CB_unit_Hauteur.currentText())
-        radius = self.getMesureInmm(self.DSB_radius.value() , self.CB_unit_radius.currentText())
         # # controle laser
         # GPIO.setup(LASER, GPIO.OUT)
-        
-        sleep(2)
-        self.queueOut.put(["debut", width, height, radius, self.ls_laser])
-        print("put done")
 
     @staticmethod
     def getMesureInmm(value, unit):

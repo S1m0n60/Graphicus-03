@@ -373,7 +373,7 @@ class Moteurs:
         #     self.queue_out.put([stepper_position, angle_position])
         #     # self.queue_out.mutex.release()
         #     self.sent_last_time = time.time()
-        stepper_position = (self.stepper_position[0]/0.125/(360/1.8))
+        stepper_position = 110 - (self.stepper_position[0]/0.125/(360/1.8))
         angle_position = self.stepper_position[2]*(pi*self.queue_radius/100)
         res_y = self.laser_control.get(angle_position) or self.laser_control[min(self.laser_control.keys(), key = lambda key: abs(key-angle_position))]
         res_x = res_y.get(stepper_position) or res_y[min(res_y.keys(), key = lambda key: abs(key-stepper_position))]
