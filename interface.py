@@ -15,12 +15,23 @@ from math import sqrt
 from queue import Queue
 # test output
 import json
-from time import sleep
+from time import sleep, ctime
 # controle laser
 import RPi.GPIO as GPIO
+from icecream import ic
 
 LASER = 16
 
+def output_to_file(text):
+    with open("DEBUG_interface.txt", "a") as f:
+        f.write(text + str(ctime()) + "\n")
+
+def init_logging_file():
+    with open("DEBUG_interface.txt", "w") as f:
+        f.write("")
+
+init_logging_file
+ic.configureOutput(prefix="Debug ~ ", outputFunction=output_to_file)
 
 class MainWindow(Ui_Graphicus03, QMainWindow):
     def __init__(self, queueOut: Queue, queueIn: Queue, is_test = False):
@@ -119,6 +130,7 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
         scale_to_img_y = self.GV_logo.height()/(fartest_point[4]-closest_point[2])
         print(scale_to_img_x, scale_to_img_y)
         scale = scale_to_img_x/2
+        self.scale_pic = scale
         if scale_to_img_y < scale_to_img_x:
             scale = scale_to_img_y/2
         # déplace tous les items vers l'origine avec le décalage calculé précédement        
@@ -134,9 +146,8 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
             item_.setPos(item_.pos() - QPointF(closest_point[1]*scale, closest_point[2]*scale)) 
             item_.setPen(pen_item)
         self.scene.setSceneRect(0, 0, fartest_point[3]*scale-closest_point[1]*scale, fartest_point[4]*scale-closest_point[2]*scale)
-
-        
-
+        self.x_offset = closest_point[1]
+        self.y_offset = closest_point[2]
         print("fini")
     
     def changeColorItem(self):
@@ -379,6 +390,7 @@ class worker(QObject):
                         stop = True
                 elif type(lecture) == list:
                     # TODO scaling from mm to image
+                    ic(lecture)
                     x = lecture[0]*self.rH
                     y = lecture[1]*self.rL
                     res_y = self.ls_laser.get(y) or self.ls_laser[min(self.ls_laser.keys(), key = lambda key: abs(key-y))]

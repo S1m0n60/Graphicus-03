@@ -3,6 +3,21 @@ import RPi.GPIO as GPIO
 import time
 from math import pi
 
+# from icecream import ic
+
+
+# def output_to_file(text):
+#     with open("DEBUG_interface.txt", "a") as f:
+#         f.write(text + "\n")
+
+# def init_logging_file():
+#     with open("DEBUG_interface.txt", "w") as f:
+#         f.write("")
+# 
+# init_logging_file
+# ic.configureOutput(prefix="Debug ~ ", outputFunction=output_to_file)
+
+
 class Moteurs:
     def __init__(self, queue_in : Queue, queue_out : Queue):
         """Initialisation de l'objet moteur, initialisation des entrées/sorties du Raspberry Pi,
@@ -328,8 +343,8 @@ class Moteurs:
         du message de début de l'interface, et se termine lorsque la position actuelle est
         plus grande que la position finale calculée
         """
-        longueur_totale = 115
-        position_initiale = 30
+        longueur_totale = 110
+        position_initiale = 60
 
         self.move_stepper_to_distance(motor_id=1, distance=position_initiale, speed=450)
         self.stepper_position[0] = 0
@@ -346,11 +361,16 @@ class Moteurs:
         """Fonction permettant de lire les valeurs actuelles des moteurs et de les placer dans
         leur file synchronisé respective.
         """
-        stepper_position = (self.stepper_position[0]/0.125/(360/1.8))
-        angle_position = self.stepper_position[2]*(pi*self.queue_radius/100)
-        # self.queue_out.mutex.acquire()
-        self.queue_out.put([stepper_position, angle_position])
-        # self.queue_out.mutex.release()
+        if not hasattr(self, "sent_last_time"):
+            self.sent_last_time = time.time()
+        if self.sent_last_time > time.time() + 50:
+            stepper_position = (self.stepper_position[0]/0.125/(360/1.8))
+            angle_position = self.stepper_position[2]*(pi*self.queue_radius/100)
+            # self.queue_out.mutex.acquire()
+            # ic([stepper_position, angle_position])
+            self.queue_out.put([stepper_position, angle_position])
+            # self.queue_out.mutex.release()
+            self.sent_last_time = time.time()
 
     def sequence(self):
         """Fonction permettant l'exécution complète du programme

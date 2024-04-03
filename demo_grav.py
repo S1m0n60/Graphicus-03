@@ -1,11 +1,7 @@
 import time
 from threading import Thread
-<<<<<<< HEAD
 from queue import Queue
 from moteurs import Moteurs
-=======
-from class_moteurs import Moteurs
->>>>>>> 0f6dc8136dafbcc019454c11870981c9ad472c9d
 
 moteurs = Moteurs(1,1)
 
