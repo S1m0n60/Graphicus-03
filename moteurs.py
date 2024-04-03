@@ -350,12 +350,14 @@ class Moteurs:
 
         self.move_stepper_to_distance(motor_id=1, distance=position_initiale, speed=450)
         self.stepper_position[0] = 0
+        self.stepper_position[2] = 0.2
         button_press = self.queue_button_start
         if button_press:
             sens = 1
             while self.stepper_position[2]*(pi*self.queue_radius/100) < self.queue_gravx:
                 self.move_stepper_to_distance(motor_id=1, distance=longueur_totale*sens, speed=450)
-                self.move_stepper_motor_forward(motor_id=3, steps=5, speed=350)
+                time.sleep(0.25)
+                self.move_stepper_motor_forward(motor_id=3, steps=5, speed=300)
                 sens *= -1
                 time.sleep(0.25)
 
