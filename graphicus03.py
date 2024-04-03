@@ -30,6 +30,7 @@ def process(queueFromInterface, queueFromProcess):
                 moteurs.queue_gravx = lecture[1]
                 moteurs.queue_gravy = lecture[2]
                 moteurs.queue_radius = lecture[3]
+                moteurs.laser_control = lecture[4]
                 # lecture.mutex.release()
                 break
         else:

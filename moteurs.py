@@ -32,6 +32,7 @@ class Moteurs:
         self.enable_pin1, self.coil_A1, self.coil_B1, self.coil_C1, self.coil_D1 = 1,23,20,22,12 
         self.enable_pin2, self.coil_A2, self.coil_B2, self.coil_C2, self.coil_D2 = 1,4,13,27,21 
         self.enable_pin3, self.coil_A3, self.coil_B3, self.coil_C3, self.coil_D3 = 1,17,9,18,10 
+        self.LASER_pin = 16
 
         GPIO.setwarnings(False)
         GPIO.setmode(GPIO.BCM)
@@ -54,6 +55,7 @@ class Moteurs:
         self.queue_gravx = 0
         self.queue_gravy = 0
         self.queue_radius = 0
+        self.laser_control = {}
         self.no_limit3 = 0
 
         self.enable_stepper_motor(1)
@@ -361,16 +363,21 @@ class Moteurs:
         """Fonction permettant de lire les valeurs actuelles des moteurs et de les placer dans
         leur file synchronisé respective.
         """
-        if not hasattr(self, "sent_last_time"):
-            self.sent_last_time = time.time()
-        if self.sent_last_time > time.time() + 50:
-            stepper_position = (self.stepper_position[0]/0.125/(360/1.8))
-            angle_position = self.stepper_position[2]*(pi*self.queue_radius/100)
-            # self.queue_out.mutex.acquire()
-            # ic([stepper_position, angle_position])
-            self.queue_out.put([stepper_position, angle_position])
-            # self.queue_out.mutex.release()
-            self.sent_last_time = time.time()
+        # if not hasattr(self, "sent_last_time"):
+        #     self.sent_last_time = time.time()
+        # if self.sent_last_time > time.time() + 50:
+        #     stepper_position = (self.stepper_position[0]/0.125/(360/1.8))
+        #     angle_position = self.stepper_position[2]*(pi*self.queue_radius/100)
+        #     # self.queue_out.mutex.acquire()
+        #     # ic([stepper_position, angle_position])
+        #     self.queue_out.put([stepper_position, angle_position])
+        #     # self.queue_out.mutex.release()
+        #     self.sent_last_time = time.time()
+        stepper_position = (self.stepper_position[0]/0.125/(360/1.8))
+        angle_position = self.stepper_position[2]*(pi*self.queue_radius/100)
+        res_y = self.ls_laser.get(angle_position) or self.ls_laser[min(self.ls_laser.keys(), key = lambda key: abs(key-angle_position))]
+        res_x = res_y.get(stepper_position) or res_y[min(res_y.keys(), key = lambda key: abs(key-stepper_position))]
+        GPIO.output(self.LASER_pin, res_x)
 
     def sequence(self):
         """Fonction permettant l'exécution complète du programme
