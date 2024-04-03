@@ -1,10 +1,32 @@
+# MIT License
+
+# Copyright (c) [2024] [Simon Gariépy]
+
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
 from queue import Queue
 import RPi.GPIO as GPIO
 import time
 from math import pi
 
 class Moteurs:
-    def __init__(self, queue_in, queue_out):
+    def __init__(self, queue_in : Queue, queue_out : Queue):
         """Initialisation de l'objet moteur, initialisation des entrées/sorties du Raspberry Pi,
         appel des fonctions de calibration de la machine.
 
@@ -328,7 +350,7 @@ class Moteurs:
         du message de début de l'interface, et se termine lorsque la position actuelle est
         plus grande que la position finale calculée
         """
-        longueur_totale = 165
+        longueur_totale = 115
         position_initiale = 30
 
         self.move_stepper_to_distance(motor_id=1, distance=position_initiale, speed=450)
@@ -338,7 +360,7 @@ class Moteurs:
             sens = 1
             while self.stepper_position[2]*(pi*self.queue_radius/100) < self.queue_gravx:
                 self.move_stepper_to_distance(motor_id=1, distance=longueur_totale*sens, speed=450)
-                self.move_stepper_motor_forward(motor_id=3, steps=5, speed=350)
+                self.move_stepper_motor_forward(motor_id=3, steps=1, speed=350)
                 sens *= -1
                 time.sleep(0.25)
 
@@ -348,13 +370,14 @@ class Moteurs:
         """
         stepper_position = (self.stepper_position[0]/0.125/(360/1.8))
         angle_position = self.stepper_position[2]*(pi*self.queue_radius/100)
-        # TODO : ajout de mutex
+        # self.queue_out.mutex.acquire()
         self.queue_out.put([stepper_position, angle_position])
+        # self.queue_out.mutex.release()
 
     def sequence(self):
         """Fonction permettant l'exécution complète du programme
         """
-        self.move_board_to_pos()
+        self.move_board_up()
         self.gravure()
         self.laser_go_to_home()
         self.move_board_down()
