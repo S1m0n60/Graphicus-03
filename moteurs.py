@@ -354,7 +354,7 @@ class Moteurs:
         plus grande que la position finale calculée
         """
         longueur_totale = 110
-        position_initiale = 60
+        position_initiale = 70
 
         self.move_stepper_to_distance(motor_id=1, distance=position_initiale, speed=450)
         self.stepper_position[0] = 0
@@ -365,7 +365,7 @@ class Moteurs:
             while self.stepper_position[2]*(pi*self.queue_radius/100) < self.queue_gravx:
                 self.move_stepper_to_distance(motor_id=1, distance=longueur_totale*sens, speed=450)
                 time.sleep(0.25)
-                self.move_stepper_motor_forward(motor_id=3, steps=1, speed=300)
+                self.move_stepper_motor_forward(motor_id=3, steps=5, speed=300)
                 sens *= -1
                 time.sleep(0.25)
 
@@ -383,8 +383,10 @@ class Moteurs:
         #     self.queue_out.put([stepper_position, angle_position])
         #     # self.queue_out.mutex.release()
         #     self.sent_last_time = time.time()
+        max_rotation = max(self.laser_control.keys())
+        print(max_rotation)
         stepper_position = 110 - (self.stepper_position[0]/0.125/(360/1.8))
-        angle_position = self.stepper_position[2]*(pi*self.queue_radius/100)
+        angle_position = max_rotation - self.stepper_position[2]*(pi*self.queue_radius/100)
         res_y = self.laser_control.get(angle_position) or self.laser_control[min(self.laser_control.keys(), key = lambda key: abs(key-angle_position))]
         res_x = res_y.get(stepper_position) or res_y[min(res_y.keys(), key = lambda key: abs(key-stepper_position))]
         GPIO.output(self.LASER_pin, res_x)
