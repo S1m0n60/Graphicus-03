@@ -66,6 +66,7 @@ class Moteurs:
         self.enable_stepper_motor(3)
         self.laser_go_to_home()
         self.move_board_down()
+        self.move_stepper_motor_forward(3, 4, 350)
 
     def is_limit_switch_triggered(self, switch_id):
         """Fonction permettant la vérification de l'état d'un capteur de fin de course.
@@ -161,20 +162,21 @@ class Moteurs:
             elapsed_time = time.time() - start_time
             
             if elapsed_time >= delay_:
-                coils = coil_sequence[step_count%4]
                 if motor_id == 1:
                     self.num_step1 +=1
                     if self.num_step1>3:
                         self.num_step1 = 0
+                    coils = coil_sequence[self.num_step1]
                 if motor_id == 2:
                     self.num_step2 +=1
                     if self.num_step2>3:
                         self.num_step2 = 0
+                    coils = coil_sequence[self.num_step2]
                 if motor_id == 3:
                     self.num_step3 +=1
                     if self.num_step3>3:
                         self.num_step3 = 0
-                    coils = coil_sequence[self.num_step]
+                    coils = coil_sequence[self.num_step3]
                 for coil_pin, coil_state in zip(self.get_coil_pins(motor_id), coils):
                     GPIO.output(coil_pin, GPIO.HIGH if coil_state else GPIO.LOW)
 
@@ -208,7 +210,7 @@ class Moteurs:
         elif motor_id == 3:
             limit_switch_pin1 = self.no_limit3
         
-        coil_sequence = [(1, 0, 0, 1), (0, 1, 0, 1), (0, 1, 1, 0), (1, 0, 1, 0)]
+        coil_sequence = [(1, 0, 1, 0), (0, 1, 1, 0), (0, 1, 0, 1), (1, 0, 0, 1)]
         delay_ = 1.0 / speed
         step_count = 0
         start_time = time.time() 
@@ -220,15 +222,18 @@ class Moteurs:
                 if motor_id == 1:
                     self.num_step1 -=1
                     if self.num_step1<0:
-                        self.num_step1 = 0
-                if motor_id == 2:
+                        self.num_step1 = 3
+                    coils = coil_sequence[self.num_step1]
+                elif motor_id == 2:
                     self.num_step2 -=1
                     if self.num_step2<0:
-                        self.num_step2 = 0
-                if motor_id == 3:
+                        self.num_step2 = 3
+                    coils = coil_sequence[self.num_step2]
+                elif motor_id == 3:
                     self.num_step3 -=1
                     if self.num_step3<0:
-                        self.num_step3 = 0
+                        self.num_step3 = 3
+                    coils = coil_sequence[self.num_step3]
                 for coil_pin, coil_state in zip(self.get_coil_pins(motor_id), coils):
                     GPIO.output(coil_pin, GPIO.HIGH if coil_state else GPIO.LOW)
                 start_time = time.time() 
@@ -268,14 +273,17 @@ class Moteurs:
                     self.num_step1 +=1
                     if self.num_step1>3:
                         self.num_step1 = 0
-                if motor_id == 2:
+                    coils = coil_sequence[self.num_step1]
+                elif motor_id == 2:
                     self.num_step2 +=1
                     if self.num_step2>3:
                         self.num_step2 = 0
-                if motor_id == 3:
+                    coils = coil_sequence[self.num_step2]
+                elif motor_id == 3:
                     self.num_step3 +=1
                     if self.num_step3>3:
                         self.num_step3 = 0
+                    coils = coil_sequence[self.num_step3]
                 for coil_pin, coil_state in zip(self.get_coil_pins(motor_id), coils):
                     GPIO.output(coil_pin, GPIO.HIGH if coil_state else GPIO.LOW)
                 start_time = time.time() 
@@ -293,7 +301,7 @@ class Moteurs:
         if speed > 525:
             speed = 525
 
-        coil_sequence = [(1, 0, 0, 1), (0, 1, 0, 1), (0, 1, 1, 0), (1, 0, 1, 0)]
+        coil_sequence = [(1, 0, 1, 0), (0, 1, 1, 0), (0, 1, 0, 1), (1, 0, 0, 1)]
         delay_ = 1.0 / speed
         step_count = 0
         start_time = time.time() 
@@ -305,15 +313,18 @@ class Moteurs:
                 if motor_id == 1:
                     self.num_step1 -=1
                     if self.num_step1<0:
-                        self.num_step1 = 0
-                if motor_id == 2:
+                        self.num_step1 = 3
+                    coils = coil_sequence[self.num_step1]
+                elif motor_id == 2:
                     self.num_step2 -=1
                     if self.num_step2<0:
-                        self.num_step2 = 0
-                if motor_id == 3:
+                        self.num_step2 = 3
+                    coils = coil_sequence[self.num_step2]
+                elif motor_id == 3:
                     self.num_step3 -=1
                     if self.num_step3<0:
-                        self.num_step3 = 0
+                        self.num_step3 = 3
+                    coils = coil_sequence[self.num_step3]
                 for coil_pin, coil_state in zip(self.get_coil_pins(motor_id), coils):
                     GPIO.output(coil_pin, GPIO.HIGH if coil_state else GPIO.LOW)
                 start_time = time.time() 
