@@ -171,35 +171,86 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
         """lance le signal dans la Queue pour débuter la gravure et initilise la reception des positions pour graver
         """
         ls_laser = {}
+        max_x = 0
+        max_y = 0
+        min_x = []
+        min_y = []
         for item in self.scene.items():
-            bounding_rec = item.boundingRect()
-            print(bounding_rec.x(), bounding_rec.y())
-            
+            bounding_rec = item.boundingRect()  
+            delta = 10          
 
-            top     = bounding_rec.topLeft().x() -2
-            left    = bounding_rec.topLeft().y() +2 
-            bot     = bounding_rec.bottomRight().x() -2
-            right   = bounding_rec.bottomRight().y() +2
-
+            top     = (bounding_rec.topLeft().x() -delta) * self.scale_pic
+            left    = (bounding_rec.topLeft().y() -delta) * self.scale_pic
+            bot     = (bounding_rec.bottomRight().x() +delta) * self.scale_pic
+            right   = (bounding_rec.bottomRight().y() +delta) * self.scale_pic
+            min_x.append(top - self.x_offset)
+            min_y.append(left - self.y_offset)
+            # print(top, bot, left, right)
             precision:int = 1
             for y in range(int(right - left)*precision):
-                yy = int(y + left)
+                yy = int(y + left - self.y_offset) 
                 if not ls_laser.__contains__(yy):
                     ls_laser[yy] = {}
                 for x in range(int(bot - top)*precision):
-                    xx = int(x + top)
+                    xx = int(x + top - self.x_offset)
                     if not ls_laser[yy].__contains__(xx):
                         ls_laser[yy][xx] = False
-                    if item.contains(QPointF(x + top, y + left)):
+                    if item.contains(QPointF((x + top)/self.scale_pic, (y + left)/self.scale_pic)):
                         ls_laser[yy][xx] = not ls_laser[yy][xx]
+            if xx>max_x:
+                max_x = xx
+            if yy>max_y:
+                max_y = yy
         
+        
+        # for item in self.scene.items():
+        #     bounding_rec = item.boundingRect()
+        #     print(bounding_rec.x(), bounding_rec.y())
+        #     top     = bounding_rec.topLeft().x() -2
+        #     left    = bounding_rec.topLeft().y() +2 
+        #     bot     = bounding_rec.bottomRight().x() -2
+        #     right   = bounding_rec.bottomRight().y() +2
+        #     precision:int = 1
+        #     for y in range(int(right - left)*precision):
+        #         yy = int(y + left)
+        #         if not ls_laser.__contains__(yy):
+        #             ls_laser[yy] = {}
+        #         for x in range(int(bot - top)*precision):
+        #             xx = int(x + top)
+        #             if not ls_laser[yy].__contains__(xx):
+        #                 ls_laser[yy][xx] = False
+        #             if item.contains(QPointF(x + top, y + left)):
+        #                 ls_laser[yy][xx] = not ls_laser[yy][xx]
+        myKeys = list(ls_laser.keys())
+        myKeys.sort()
+        myValues = list(list(ls_laser.values())[0].keys())
+        myValues.sort()
+        min_value = min(min_x)
+        min_key = min(min_y)
+        new_ls_laser = {}
+        self.dim_zone = (max_x - min_value - delta/2, max_y - min_key - delta/2)
+        
+        for key in ls_laser.keys():
+            value = ls_laser[key]
+            new_value = {}
+            for value_key in value.keys():
+                new_value[value_key - min_value - delta/2] = value[value_key]
+            new_ls_laser[int(key) - min_key - delta/2] = new_value
+        # with open("sortie_bounding_rect_met.json", 'w') as f:
+        #     json.dump(new_ls_laser, f)
+        self.ls_laser = new_ls_laser
+        self.startExecution_qthread()
         print("finis ic")
+
+    def startExecution_qthread(self):
+        """lance le signal dans la Queue pour débuter la gravure et initilise la reception des positions pour graver
+        """
         print("thread initialise")
-        rapport_h = self.scene.itemsBoundingRect().x()/(self.DSB_Hauteur.value()*10)
-        rapport_l = self.scene.itemsBoundingRect().y()/(self.DSB_Largeur.value()*10)
+        rapport_h = self.dim_zone[0]/(self.DSB_Hauteur.value()*10)              # self.scene.itemsBoundingRect().x()
+        rapport_l = self.dim_zone[1]/(self.DSB_Largeur.value()*10)              # self.scene.itemsBoundingRect().y()
 
         self.thread = QThread()
-        self.worker = worker(self.queueIn, ls_laser, self.progress_done, rapport_h, rapport_l)
+        self.worker = worker(self.queueIn, self.ls_laser, self.progress_done, rapport_h, rapport_l, self.dim_zone)
         self.worker.moveToThread(self.thread)
         # connecter les signaux entre le worker et la thread associé
         self.thread.started.connect(self.worker.run_)
@@ -213,11 +264,9 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
         width  = self.getMesureInmm(self.DSB_Largeur.value(), self.CB_unit_Largeur.currentText())
         height = self.getMesureInmm(self.DSB_Hauteur.value(), self.CB_unit_Hauteur.currentText())
         radius = self.getMesureInmm(self.DSB_radius.value() , self.CB_unit_radius.currentText())
-        print(width, height, radius)
         # controle laser
         GPIO.setup(LASER, GPIO.OUT)
         
-
         sleep(2)
         self.queueOut.put(["debut", width, height, radius])
         print("put done")
@@ -308,7 +357,7 @@ class worker(QObject):
     finished = Signal()
     _progress = Signal(tuple)
 
-    def __init__(self, queueIn:Queue, target_func, end_call_func, rH, rL):
+    def __init__(self, queueIn:Queue, target_func, end_call_func, rH, rL, dimension):
         super().__init__()
         print("worker init")
         self.queueIn = queueIn
@@ -316,29 +365,26 @@ class worker(QObject):
         self.end_call_func = end_call_func
         self.rH = rH
         self.rL = rL
+        self.dim = dimension
 
     def run_(self):
-        print("run")
         stop = False
         result_worker = []
         while not stop:
             if not self.queueIn.empty():
-                # TODO : mutex
                 lecture = self.queueIn.get_nowait()
                 if type(lecture) == str:
                     if lecture == "finis":
                         self.end_call_func()
                         stop = True
                 elif type(lecture) == list:
-                    print(f"ici {lecture[0], lecture[1]}")
+                    # TODO scaling from mm to image
                     x = lecture[0]*self.rH
                     y = lecture[1]*self.rL
                     res_y = self.ls_laser.get(y) or self.ls_laser[min(self.ls_laser.keys(), key = lambda key: abs(key-y))]
                     res_x = res_y.get(x) or res_y[min(res_y.keys(), key = lambda key: abs(key-x))]
                     GPIO.output(LASER, res_x)
-                    self._progress.emit((x, y))
-                    # capture
-                    
+                    self._progress.emit((x, y))                    
         
         sleep(5)
         self.finished.emit()
