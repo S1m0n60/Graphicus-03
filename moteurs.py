@@ -57,6 +57,7 @@ class Moteurs:
         self.queue_radius = 0
         self.laser_control = {}
         self.no_limit3 = 0
+        self.num_step = 0
 
         self.enable_stepper_motor(1)
         self.enable_stepper_motor(2)
@@ -159,8 +160,15 @@ class Moteurs:
             
             if elapsed_time >= delay_:
                 coils = coil_sequence[step_count%4]
+                if motor_id == 3:
+                    self.num_step +=1
+                    if self.num_step>3:
+                        self.num_step = 0
+                    print(self.num_step)
+                    coils = coil_sequence[self.num_step]
                 for coil_pin, coil_state in zip(self.get_coil_pins(motor_id), coils):
                     GPIO.output(coil_pin, GPIO.HIGH if coil_state else GPIO.LOW)
+
                 start_time = time.time() 
                 step_count += 1 
 
@@ -357,7 +365,7 @@ class Moteurs:
             while self.stepper_position[2]*(pi*self.queue_radius/100) < self.queue_gravx:
                 self.move_stepper_to_distance(motor_id=1, distance=longueur_totale*sens, speed=450)
                 time.sleep(0.25)
-                self.move_stepper_motor_forward(motor_id=3, steps=5, speed=300)
+                self.move_stepper_motor_forward(motor_id=3, steps=1, speed=300)
                 sens *= -1
                 time.sleep(0.25)
 
