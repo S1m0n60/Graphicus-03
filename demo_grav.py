@@ -18,11 +18,11 @@ def motor1(moteurs):
 def motor3(moteurs):
 
     while True:
-        moteurs.move_stepper_motor_forward(3,4,300)
+        moteurs.move_stepper_motor_forward(3,4,100)
         # moteurs.move_stepper_motor_forward(3,500,350)
         # moteurs.move_stepper_motor_backwards(3,500,75)
         time.sleep(1)
-        moteurs.move_stepper_motor_backwards(3,4,300)
+        moteurs.move_stepper_motor_backwards(3,4,100)
         time.sleep(1)
 
 #-----------Creation de thread----------------
