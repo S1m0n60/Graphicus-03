@@ -9,7 +9,7 @@ Les ressources de cette section du répertoire sont divisé en deux section:
 * [Les plan & devis](https://github.com/S1m0n60/Graphicus-03/tree/main/Mecanique/Plan%26Devis)
 
 
->[!NOTE] Les étapes à suivre pour effectuer l'assemblage se trouve dans le [Wiki](https://github.com/S1m0n60/Graphicus-03/wiki/M%C3%A9canique).
+Noter que les étapes à suivre pour effectuer l'assemblage se trouve dans le [Wiki](https://github.com/S1m0n60/Graphicus-03/wiki/M%C3%A9canique).
 
 
 </p>
