@@ -17,8 +17,8 @@ class Ui_Graphicus03(object):
     def setupUi(self, Graphicus03):
         if not Graphicus03.objectName():
             Graphicus03.setObjectName(u"Graphicus03")
-        Graphicus03.resize(741, 450)
-        Graphicus03.setMinimumSize(QSize(300, 450))
+        Graphicus03.resize(800, 450)
+        Graphicus03.setMinimumSize(QSize(800, 450))
         Graphicus03.setMaximumSize(QSize(1000, 450))
         self.centralwidget = QWidget(Graphicus03)
         self.centralwidget.setObjectName(u"centralwidget")
@@ -93,7 +93,7 @@ class Ui_Graphicus03(object):
         self.PB_launch.setFont(font5)
         self.GV_logo = QGraphicsView(self.centralwidget)
         self.GV_logo.setObjectName(u"GV_logo")
-        self.GV_logo.setGeometry(QRect(300, 10, 421, 391))
+        self.GV_logo.setGeometry(QRect(300, 10, 491, 391))
         self.GB_dimensions = QGroupBox(self.centralwidget)
         self.GB_dimensions.setObjectName(u"GB_dimensions")
         self.GB_dimensions.setGeometry(QRect(10, 230, 281, 111))
@@ -162,7 +162,7 @@ class Ui_Graphicus03(object):
         Graphicus03.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(Graphicus03)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 741, 21))
+        self.menubar.setGeometry(QRect(0, 0, 800, 21))
         Graphicus03.setMenuBar(self.menubar)
         self.statusbar = QStatusBar(Graphicus03)
         self.statusbar.setObjectName(u"statusbar")
