@@ -413,16 +413,6 @@ class Moteurs:
         """Fonction permettant de lire les valeurs actuelles des moteurs et de les placer dans
         leur file synchronisé respective.
         """
-        # if not hasattr(self, "sent_last_time"):
-        #     self.sent_last_time = time.time()
-        # if self.sent_last_time > time.time() + 50:
-        #     stepper_position = (self.stepper_position[0]/0.125/(360/1.8))
-        #     angle_position = self.stepper_position[2]*(pi*self.queue_radius/100)
-        #     # self.queue_out.mutex.acquire()
-        #     # ic([stepper_position, angle_position])
-        #     self.queue_out.put([stepper_position, angle_position])
-        #     # self.queue_out.mutex.release()
-        #     self.sent_last_time = time.time()
         max_rotation = max(self.laser_control.keys())
         print(max_rotation)
         stepper_position = 110 - (self.stepper_position[0]/0.125/(360/1.8))
