@@ -16,7 +16,7 @@ class Moteurs:
 
         self.enable_pin1, self.coil_A1, self.coil_B1, self.coil_C1, self.coil_D1 = 1,23,20,22,12 
         self.enable_pin2, self.coil_A2, self.coil_B2, self.coil_C2, self.coil_D2 = 1,4,13,27,21 
-        self.enable_pin3, self.coil_A3, self.coil_B3, self.coil_C3, self.coil_D3 = 1,17,9,26,10 
+        self.enable_pin3, self.coil_A3, self.coil_B3, self.coil_C3, self.coil_D3 = 1,17,9,18,10 
         self.LASER_pin = 16
 
         GPIO.setwarnings(False)
