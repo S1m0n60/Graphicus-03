@@ -3,21 +3,6 @@ import RPi.GPIO as GPIO
 import time
 from math import pi
 
-# from icecream import ic
-
-
-# def output_to_file(text):
-#     with open("DEBUG_interface.txt", "a") as f:
-#         f.write(text + "\n")
-
-# def init_logging_file():
-#     with open("DEBUG_interface.txt", "w") as f:
-#         f.write("")
-# 
-# init_logging_file
-# ic.configureOutput(prefix="Debug ~ ", outputFunction=output_to_file)
-
-
 class Moteurs:
     def __init__(self, queue_in : Queue, queue_out : Queue):
         """Initialisation de l'objet moteur, initialisation des entrées/sorties du Raspberry Pi,
