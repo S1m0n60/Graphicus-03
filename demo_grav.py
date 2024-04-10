@@ -10,9 +10,9 @@ def motor1(moteurs):
 
     while True:
         time.sleep(1)
-        moteurs.move_stepper_motor_forward(1,10000,450)
+        moteurs.move_board_up()
         time.sleep(1)
-        moteurs.move_stepper_motor_backwards(1,10000,450)
+        moteurs.move_board_down()
         time.sleep(1)
 
 def motor3(moteurs):
