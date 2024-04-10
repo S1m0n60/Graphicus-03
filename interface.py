@@ -310,11 +310,11 @@ class worker(QObject):
         self.parent.ls_laser = new_ls_laser
         print("finis ic")
         sleep(2)
-        # self.parent.queueOut.put(["debut", width, height, radius, self.parent.ls_laser])
+        self.parent.queueOut.put(["debut", width, height, radius, self.parent.ls_laser])
         print("put done")         
         
         sleep(5)
-        self.parent.finished.emit()
+        self.finished.emit()
 
 def initWindow(queueOut, queueIn):
     app = QApplication([])
