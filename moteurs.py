@@ -420,7 +420,7 @@ class Moteurs:
             while self.stepper_position[2]*(pi*self.queue_radius/100) < self.queue_gravx:
                 self.move_stepper_to_distance(motor_id=1, distance=longueur_totale*sens, speed=450)
                 time.sleep(0.25)
-                self.move_stepper_motor_forward(motor_id=3, steps=4, speed=300)
+                self.move_stepper_motor_forward(motor_id=3, steps=1, speed=50)
                 sens *= -1
                 time.sleep(0.25)
 
