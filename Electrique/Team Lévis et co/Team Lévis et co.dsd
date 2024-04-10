@@ -1,0 +1,106 @@
+[DWF6Version]
+Ver=1
+[DWF6MinorVersion]
+MinorVer=1
+[DWF6Sheet:Power]
+DWG=C:\Users\sambo\OneDrive\Documents\Team Lévis et co\Power.dwg
+Layout=Model
+Setup=
+OriginalSheetPath=C:\Users\sambo\OneDrive\Documents\Team Lévis et co\Power.dwg
+Has Plot Port=0
+Has3DDWF=0
+[DWF6Sheet:Low Voltage]
+DWG=C:\Users\sambo\OneDrive\Documents\Team Lévis et co\Low Voltage.dwg
+Layout=Model
+Setup=
+OriginalSheetPath=C:\Users\sambo\OneDrive\Documents\Team Lévis et co\Low Voltage.dwg
+Has Plot Port=0
+Has3DDWF=0
+[DWF6Sheet:Raspberry Pi]
+DWG=C:\Users\sambo\OneDrive\Documents\Team Lévis et co\Raspberry Pi.dwg
+Layout=Model
+Setup=
+OriginalSheetPath=C:\Users\sambo\OneDrive\Documents\Team Lévis et co\Raspberry Pi.dwg
+Has Plot Port=0
+Has3DDWF=0
+[DWF6Sheet:LN298 (1)]
+DWG=C:\Users\sambo\OneDrive\Documents\Team Lévis et co\LN298 (1).dwg
+Layout=Model
+Setup=
+OriginalSheetPath=C:\Users\sambo\OneDrive\Documents\Team Lévis et co\LN298 (1).dwg
+Has Plot Port=0
+Has3DDWF=0
+[DWF6Sheet:LN298 (2)]
+DWG=C:\Users\sambo\OneDrive\Documents\Team Lévis et co\LN298 (2).dwg
+Layout=Model
+Setup=
+OriginalSheetPath=C:\Users\sambo\OneDrive\Documents\Team Lévis et co\LN298 (2).dwg
+Has Plot Port=0
+Has3DDWF=0
+[DWF6Sheet:LN298 (3)]
+DWG=C:\Users\sambo\OneDrive\Documents\Team Lévis et co\LN298 (3).dwg
+Layout=Model
+Setup=
+OriginalSheetPath=C:\Users\sambo\OneDrive\Documents\Team Lévis et co\LN298 (3).dwg
+Has Plot Port=0
+Has3DDWF=0
+[DWF6Sheet:Laser]
+DWG=C:\Users\sambo\OneDrive\Documents\Team Lévis et co\Laser.dwg
+Layout=Model
+Setup=
+OriginalSheetPath=C:\Users\sambo\OneDrive\Documents\Team Lévis et co\Laser.dwg
+Has Plot Port=0
+Has3DDWF=0
+[DWF6Sheet:Communication]
+DWG=C:\Users\sambo\OneDrive\Documents\Team Lévis et co\Communication.dwg
+Layout=Model
+Setup=
+OriginalSheetPath=C:\Users\sambo\OneDrive\Documents\Team Lévis et co\Communication.dwg
+Has Plot Port=0
+Has3DDWF=0
+[Target]
+Type=6
+DWF=C:\Users\sambo\OneDrive\Documents\Team Lévis et co\Team Lévis et co.pdf
+OUT=C:\Users\sambo\OneDrive\Documents\
+PWD=
+[AcePublish]
+IncludeBookmarks=TRUE
+IncludeHyperlinks=TRUE
+ZoomFactor=50
+TempFolder=C:\Users\sambo\AppData\Local\Temp\AcePub_1038683\
+OriginWdpPath=C:\Users\sambo\OneDrive\Documents\Team Lévis et co\Team Lévis et co.wdp
+OriginMdbPath=C:\Users\sambo\AppData\Roaming\Autodesk\AutoCAD Electrical 2024\R24.3\enu\Support\user\Team Lévis et co.mdb
+TempWdpPath=C:\Users\sambo\AppData\Local\Temp\AcePub_1038683\Team Lévis et co.wdp
+TempMdbPath=C:\Users\sambo\AppData\Local\Temp\AcePub_1038683\Team Lévis et co.mdb
+[PdfOptions]
+IncludeHyperlinks=TRUE
+CreateBookmarks=FALSE
+CaptureFontsInDrawing=TRUE
+ConvertTextToGeometry=FALSE
+VectorResolution=1200
+RasterResolution=400
+[AutoCAD Block Data]
+IncludeBlockInfo=0
+BlockTmplFilePath=
+[SheetSet Properties]
+IsSheetSet=FALSE
+IsHomogeneous=FALSE
+SheetSet Name=
+NoOfCopies=1
+PlotStampOn=FALSE
+ViewFile=FALSE
+JobID=0
+SelectionSetName=
+AcadProfile=<<ACADE>>
+CategoryName=
+LogFilePath=
+IncludeLayer=FALSE
+LineMerge=FALSE
+CurrentPrecision=
+PromptForDwfName=TRUE
+PwdProtectPublishedDWF=FALSE
+PromptForPwd=FALSE
+RepublishingMarkups=FALSE
+PublishSheetSetMetadata=FALSE
+PublishSheetMetadata=FALSE
+3DDWFOptions=0 1
