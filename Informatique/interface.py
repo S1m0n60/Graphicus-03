@@ -16,11 +16,15 @@ from queue import Queue
 import json
 from time import sleep
 
-class MainWindow(Ui_Graphicus03, QMainWindow):
+class Interface(Ui_Graphicus03, QMainWindow):
     def __init__(self, queueOut: Queue, queueIn: Queue):
-        """Initilise l'interface
+        """Creer l'interface pour Graphicus-03
+
+        Args:
+            queueOut (Queue): Queue sortant les données de l'interface
+            queueIn (Queue): Queue aillant les données entrante à l'interface
         """
-        super(MainWindow, self).__init__()
+        super(Interface, self).__init__()
         self.setupUi(self)
         self.scene = QGraphicsScene(0, 0, 200, 140)
         self.screen_info = None
@@ -32,7 +36,7 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
         self.setupConnection()
 
     def setupConnection(self):
-        """Connecte les évènements de l'interface à leur fonction dédiée
+        """Creer les connections pour les boutons de l'interface
         """
         self.PB_selectFile.pressed.connect(self.fileSelection)
         self.PB_launch.pressed.connect(self.startExecution)
@@ -54,10 +58,8 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
         selected_file_temp = filedialog.askopenfile(filetypes=[("vector files", ["*.svg"]), ("all files", "*")])
         if selected_file_temp != None:
             self.selected_file = selected_file_temp
-            print(self.selected_file.name)
             self.LE_csvFile.setText(self.selected_file.name)
             self.modifyImageViewer()
-            self.changeColorItem()
 
     def modifyImageViewer(self):
         """Modifie l'image du logo sur le graphique view avec l'image provenant du fichier SVG
@@ -107,7 +109,6 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
                     
         scale_to_img_x = self.GV_logo.width()/(fartest_point[3]-closest_point[1])
         scale_to_img_y = self.GV_logo.height()/(fartest_point[4]-closest_point[2])
-        print(scale_to_img_x, scale_to_img_y)
         scale = scale_to_img_x/2
         if scale_to_img_y < scale_to_img_x:
             scale = scale_to_img_y/2
@@ -128,24 +129,6 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
         self.x_offset = closest_point[0]
         self.y_offset = closest_point[1]
         
-        
-
-        print("fini")
-    
-    def changeColorItem(self):
-        for item in self.polygonItems:
-            collision_count = self.get_item_collisions(item) 
-            # print(item.zValue())
-            # if collision_count == 1:
-            #     continue
-            # elif collision_count == 0:
-            #     item.setBrush(Qt.white)
-            # elif collision_count == 2:
-            #     item.setBrush(Qt.red)
-            # elif collision_count >= 3:
-            #     item.setBrush(Qt.blue)
-            # else:
-            #     item.setBrush(Qt.black)
 
     def get_distance_from_origine(self, graphic_item: QGraphicsPolygonItem):
         """Retourne la distance entre le entre l'origine (0, 0) et la position d'un QGraphicsItem
@@ -161,7 +144,7 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
         return [distance, b_rect.x(), b_rect.y(), b_rect.x()+b_rect.width(), b_rect.y()+b_rect.height()]
 
     def startExecution(self):
-        """lance le signal dans la Queue pour débuter la gravure et initilise la reception des positions pour graver
+        """lance le signal dans la Queue pour débuter la gravure et initilise la reception des positions pour graver et desactive les widgets de l'interface
         """
         # disable the hole screen
         all_widgets = [self.CB_material, self.CB_unit_Hauteur, self.CB_unit_Largeur, self.CB_unit_radius,
@@ -184,7 +167,15 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
 
     @staticmethod
     def getMesureInmm(value, unit):
-        # TODO RIGHT HERE
+        """Converti les valeur entree en mm
+
+        Args:
+            value (float): valeur numerique a convertir
+            unit (string): mm, cm, ou po
+
+        Returns:
+            _type_: _description_
+        """
         if unit == "mm":
             return value
         elif unit == "cm":
@@ -194,66 +185,25 @@ class MainWindow(Ui_Graphicus03, QMainWindow):
         else:
             return 0
 
-    def startExecution_test_print(self):
-        """test la génération de signal pour le laser
-        analyse chaque pixel de l'interface pour générer une image représentant si le laser est allumé ou fermé
-        à combiner avec "from_bin_map_to_image.py"
-        """
-        self.PB_launch.setDisabled(True)
-        cb_unit_index = self.CB_unit_radius.currentIndex()
-        cb_material_index = self.CB_material.currentIndex()
-        print(f"startExecution - {self.DSB_radius.value()} {self.CB_unit_radius.itemText(cb_unit_index)} - {self.CB_material.itemText(cb_material_index)}")
-
-        Laser = QGraphicsRectItem(0.5, 0.5, 0.01, 0.01)
-        self.scene.addItem(Laser)
-
-        width = self.scene.sceneRect().width()
-        height = self.scene.sceneRect().height()
-        x0 = self.scene.sceneRect().x()
-        y0 = self.scene.sceneRect().y()
-        
-        print(x0, y0, width, height)
-
-        result = ""
-        for y in range(int(y0), int(height)):
-            last_collision = 0
-            for item in self.polygonItems:
-                if Laser.collidesWithItem(item):
-                    last_collision += 1
-            for x in range(int(x0), int(width)):
-                #inversed for some reason
-                Laser.setPos(x, y)
-                collision = 0
-                for item in self.polygonItems:
-                    if Laser.collidesWithItem(item):
-                        collision += 1
-                result += str(collision % 2 ) + " " 
-                last_collision = collision
-
-            result += "\n"
-        with open("ouput_test.txt", 'w') as f:
-            f.write(result)
-        self.PB_launch.setEnabled(True)
-
-    def get_item_collisions(self, item) -> bool:
-        collision = -1
-        for other_item in self.polygonItems:
-            if item.collidesWithItem(other_item):
-                collision += 1                
-        return (collision)
     
 class worker(QObject):
     finished = Signal()
     _progress = Signal(tuple)
 
     def __init__(self, queueOut:Queue, parent):
+        """Worker calculant le dictionnaire de controle laser et l'envoie dans la queueOut
+
+        Args:
+            queueOut (Queue): Queue sortant de l'interface
+            parent (Interface): Interface utilisant le worker
+        """
         super().__init__()
-        print("worker init")
         self.queueOut = queueOut
         self.parent = parent
 
     def run_(self):
-        print("Running")
+        """Execution du worker
+        """
         ls_laser = {}
         max_x = 0
         max_y = 0
@@ -272,7 +222,6 @@ class worker(QObject):
             right   = (bounding_rec.bottomRight().y() +delta) * self.parent.scale_pic
             min_x.append(top - self.parent.x_offset)
             min_y.append(left - self.parent.y_offset)
-            # print(top, bot, left, right)
             precision:int = 1
             for y in range(int(right - left)*precision):
                 yy = int(y + left - self.parent.y_offset) 
@@ -308,17 +257,21 @@ class worker(QObject):
         with open("sortie_bounding_rect_met.json", 'w') as f:
             json.dump(new_ls_laser, f, indent=4)
         self.parent.ls_laser = new_ls_laser
-        print("finis ic")
         sleep(2)
         self.parent.queueOut.put(["debut", width, height, radius, self.parent.ls_laser])
-        print("put done")         
         
         sleep(5)
         self.finished.emit()
 
 def initWindow(queueOut, queueIn):
+    """Lance la fenetre Interface
+
+    Args:
+        queueOut (Queue): Queue sortant de l'interface
+        queueIn (Queue): Queue entrant dans l'interface
+    """
     app = QApplication([])
-    win = MainWindow(queueOut, queueIn)
+    win = Interface(queueOut, queueIn)
     win.show()
     # PySide_dark_theme.toggleDarkTheme(app, PySide_dark_theme.darkTheme())
     app.exec_()
